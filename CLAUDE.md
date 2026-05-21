@@ -1422,18 +1422,52 @@ of the task before beginning."
 
 ## 16. BUILD LOG
 
-### Session 1 — [DATE]
+### Session 1 — 2026-05-20
 **Objective:** Supabase schema + project scaffold
-**What was built:** [Update after session]
-**Key decisions made:** [Update after session]
-**Files created/modified:** [Update after session]
-**Supabase Project ID:** [Update after session]
-**GitHub Repo URL:** [Update after session]
-**Where we left off:** [Update after session]
-**Next session:** Session 2 — Client Records UI
+**What was built:**
+- Complete database schema: 25 enum types, 21 tables in FK-dependency order, 10 triggers/functions, and performance indexes (`001_schema.sql`)
+- Full RLS policies: all 21 tables enabled, 5 SECURITY DEFINER helper functions (`is_principal`, `is_pm_or_above`, `is_admin_billing`, `is_assigned_to_project`, `get_my_role`), all role-scoped policies (`002_rls.sql`)
+- Seed data: 1 firm_settings record (PMG defaults), 6 non-billable billing codes, 123 scope_library placeholder rows keyed by correct phase/category/item_number/sort_order (`003_seed.sql`)
+- Supabase client: `src/lib/supabase.js`
+- Full `src/` directory structure: `/components/layout`, `/components/ui`, `/components/clients`, `/components/projects`, `/components/fees`, `/components/rates`, `/components/timesheets`, `/components/invoicing`, `/context`, `/hooks`, `/pages`
+
+**Key decisions made:**
+- Executed fee immutability: DB trigger allows ONLY the `Executed → Superseded` status transition after execution — all other field changes blocked. Application must supersede the old fee before executing the new one.
+- Single executed fee enforced by trigger (not just application logic): raises exception if a second `Executed` fee would exist on the same project simultaneously.
+- `is_billable` on `timesheet_entries` is overwritten by a BEFORE INSERT/UPDATE trigger from the billing code — employee input is structurally impossible to override.
+- Baseline projection `projected_hours`/`projected_amount` locked by trigger; only `reforecast_hours`/`reforecast_amount` columns update post-baseline.
+- `scope_role_enum` (PM/Contracts/CM/Scheduling/Sustainability/Custom) used for scope library and fee line items; `rate_role_enum` (broader set including Principal/Admin etc.) used for rate cards and projections.
+- `internal_cost_rate` column visibility enforced at RLS level: non-Principals can only select their own person-specific rate or role-based rates; application layer must additionally exclude the column from API responses for non-Principals.
+- `fee_line_items.total_hours` and `line_total` are GENERATED ALWAYS AS STORED computed columns — no application logic required to maintain them.
+- Project billing code auto-created by trigger when project status transitions to `Active`.
+
+**Files created/modified:**
+- `supabase/migrations/001_schema.sql` — enums, tables, triggers, indexes (718 lines)
+- `supabase/migrations/002_rls.sql` — RLS enable + helper functions + all policies (595 lines)
+- `supabase/migrations/003_seed.sql` — firm_settings, billing codes, scope_library stubs (203 lines)
+- `src/lib/supabase.js` — Supabase client initialization
+- `src/` directory tree — all 11 subdirectories per spec
+
+**Supabase Project ID:** ozkrhngpccwlzjsxezyu
+**Supabase Project URL:** https://ozkrhngpccwlzjsxezyu.supabase.co
+**GitHub Repo URL:** [Update when repo is pushed to GitHub]
+
+**Verification confirmed:**
+- All 21 tables present in Supabase
+- firm_settings: 1 row ✓
+- billing_codes: 6 rows ✓
+- scope_library: 123 rows ✓
+
+**Outstanding before Session 2:**
+- Populate scope_library with actual Attachment A data (replace placeholder `activity_name` and `standard_description` values)
+- Update `firm_settings` record with actual PMG address, phone, email, and payment instructions
+- Push repo to GitHub and update GitHub Repo URL above
+
+**Where we left off:** All 21 tables live in Supabase with RLS enabled. Schema is the authoritative data layer for all Phase 1 modules. No UI has been built.
+**Next session:** Session 2 — Client Records UI (client list, client detail, contacts inline)
 
 ---
 
-*Last updated: May 19, 2026*
-*Updated by: Alta•Via Workshop*
-*Status: Ready for Session 1*
+*Last updated: 2026-05-20*
+*Updated by: Claude Code — Session 1*
+*Status: Session 1 complete — ready for Session 2*
