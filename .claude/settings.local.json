@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//mnt/c/Users/mspal/Documents/**)",
+      "Bash(dir \"C:\\\\Users\\\\mspal\\\\Documents\\\\alta-via\")",
+      "Bash(mkdir -p \"/mnt/c/Users/mspal/Documents/alta-via/supabase/migrations\")",
+      "Bash(mkdir -p \"/mnt/c/Users/mspal/Documents/alta-via/src/lib\")"
+    ]
+  }
+}
