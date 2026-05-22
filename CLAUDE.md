@@ -1468,6 +1468,58 @@ of the task before beginning."
 
 ---
 
-*Last updated: 2026-05-20*
-*Updated by: Claude Code — Session 1*
-*Status: Session 1 complete — ready for Session 2*
+### Session 2 — 2026-05-21
+**Objective:** Phase 1 schema additions migration + Client Records UI
+
+**What was built:**
+- Ran Section 15 migration: lump sum columns on `projection_monthly_detail`, `projection_type`/add_service fields on `staffing_projections`, `manager_id` on `users`, `add_services` table, `line_type` on `invoice_line_items`
+- Updated `firm_settings`: removed PMG-specific data, now uses generic placeholder values
+- Fixed Tailwind v4 PostCSS config (`@tailwindcss/postcss` package)
+- `FirmContext` and `AuthContext` — loads `firm_settings` from Supabase on mount
+- Layout shell: `Sidebar`, `TopBar`, `PageWrapper` — responsive, navy sidebar, orange active indicator, firm name from `FirmContext`
+- `App.jsx` — react-router-dom routing, all placeholder pages
+- Client Records module: `ClientsPage`, `ClientList`, `ClientDetail`, `ClientForm`, `ContactList`, `ContactForm`
+- `Modal` UI primitive
+
+**Key decisions made:**
+- Anon RLS policies added temporarily for `clients` and `client_contacts` tables for testing — must be replaced with authenticated policies when auth is implemented
+- `firm_settings` requires a public read RLS policy — added
+- Tailwind v4 requires `@tailwindcss/postcss` instead of `tailwindcss` directly in `postcss.config.js`
+- `index.css` uses `@import "tailwindcss"` instead of `@tailwind` directives
+
+**Files created/modified:**
+- `postcss.config.js` — updated for Tailwind v4
+- `src/index.css` — updated for Tailwind v4
+- `src/main.jsx` — updated
+- `src/App.jsx` — react-router-dom routing, all placeholder pages
+- `src/context/FirmContext.jsx`
+- `src/context/AuthContext.jsx`
+- `src/components/layout/Sidebar.jsx`
+- `src/components/layout/TopBar.jsx`
+- `src/components/layout/PageWrapper.jsx`
+- `src/components/ui/Modal.jsx`
+- `src/pages/ClientsPage.jsx`
+- `src/pages/ClientDetailPage.jsx`
+- `src/components/clients/ClientList.jsx`
+- `src/components/clients/ClientDetail.jsx`
+- `src/components/clients/ClientForm.jsx`
+- `src/components/clients/ContactList.jsx`
+- `src/components/clients/ContactForm.jsx`
+
+**Verification confirmed:**
+- Client list loads from Supabase
+- Add client saves and appears in list
+- Client detail loads correct client
+- Edit client updates correctly
+- Add contact saves and appears in contact list
+- Soft delete (deactivate) works correctly
+- Firm name loads from `firm_settings` — not hardcoded
+
+**Where we left off:** Client Records module fully complete and committed.
+**Next session:** Session 3 — Projects module
+
+---
+
+*Last updated: 2026-05-21*
+*Updated by: Claude Code — Session 2*
+*Status: Session 2 complete — ready for Session 3*
