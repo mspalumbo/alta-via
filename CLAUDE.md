@@ -64,32 +64,54 @@ but they share project and client data as a connected ecosystem.
 
 ### 2.2 Color System
 
-**Primary colors (shared with Vetta — sibling product family):**
-- Navy: #142538
-- Orange: #F2903A
-- White: #FFFFFF
+**Primary color:** Forest Green #1E3D2F
+**Accent color:** Orange #F2903A
 
-**Note on Vetta color relationship:**
-The raw hex values are identical to Vetta. Differentiation comes from
-how colors are applied in the UI, not from different colors.
-Vetta and Alta•Via are visibly related — that is intentional and correct.
+**Sidebar:**
+- Background: #1E3D2F (forest green)
+- Text active: #FFFFFF
+- Text inactive: rgba(255,255,255,0.6)
+- Active item highlight: slightly lighter green background + #F2903A icon
 
-**UI color application for Alta•Via:**
-- Sidebar background: #142538 (navy)
-- Sidebar text active: #FFFFFF
-- Sidebar text inactive: rgba(255,255,255,0.6)
-- Primary accent / CTA buttons: #F2903A
-- Page background: #F8F9FA (near white, not pure white)
+**Content area:**
+- Page background: #F8F9FA (near white)
 - Card/panel background: #FFFFFF
 - Primary text: #1A1A2E (near black)
 - Secondary text: #6B7280
 - Border/divider: #E5E7EB
-- Success: #10B981
-- Warning: #F59E0B
-- Error: #EF4444
 - Table header background: #F3F4F6
 
-**Status colors (used consistently across all modules):**
+**Accent usage — CRITICAL:**
+Orange #F2903A is a signal color, not a base color. It appears in:
+- The sun accent in the Alta•Via logo mark
+- The active navigation item icon in the sidebar
+- Primary CTA buttons
+- Key highlight moments (alerts, warnings, critical actions)
+
+Orange must NOT appear in:
+- Chart bars or data visualizations
+- Body text accents or callouts
+- Card icons
+- Secondary links or navigation
+
+**Data visualization colors:**
+- Primary data bars/lines: #2D5A3D (mid forest green)
+- Secondary/actual bars: #D1D5DB (light gray)
+- Success/positive: #10B981 (green)
+- Warning: #F59E0B (amber)
+- Error/alert: #EF4444 (red)
+- Neutral: #6B7280 (gray)
+
+**Staffing & Utilization grid colors:**
+- Future month, at or above target: #10B981 (green)
+- Future month, below target: #EF4444 (red)
+- Future month, no projection: #E5E7EB (gray)
+- Past month, actual ≥ projected: #3B82F6 (blue)
+- Past month, actual < projected: #F59E0B (amber)
+- Past month pending close: muted blue/amber with indicator dot
+- Current month: progress indicator
+
+**Status colors:**
 - Active / Approved / Paid: #10B981 (green)
 - Pending / In Review: #F59E0B (amber)
 - Overdue / Missing / Error: #EF4444 (red)
