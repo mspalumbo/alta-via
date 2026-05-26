@@ -1542,6 +1542,41 @@ of the task before beginning."
 
 ---
 
-*Last updated: 2026-05-21*
-*Updated by: Claude Code — Session 2*
-*Status: Session 2 complete — ready for Session 3*
+### Session 3 — 2026-05-26
+**Objective:** Projects module — list, form, detail with team assignments
+
+**What was built:**
+- `ProjectsPage.jsx` — page wrapper
+- `ProjectList.jsx` — searchable (name + number) and filterable (status, type) table with color-coded status badges; Add Project button opens modal
+- `ProjectForm.jsx` — add/edit mode; add mode reads fresh `firm_settings` at save time to generate project number (PREFIX-YYYY-### or PREFIX-### based on `project_number_include_year`) then increments `project_number_next_seq`; all form fields from spec
+- `ProjectDetailPage.jsx` — page wrapper
+- `ProjectDetail.jsx` — four info sections (Overview, Timeline, Financial, Contract); clickable client name links to `/clients/:id`; Team Assignments section with add (modal) and remove (soft-delete `is_active = false`); placeholder sections for Fee Development and Invoices
+- `AddMemberForm` (inline in ProjectDetail) — user dropdown from `public.users`, role on project text, start/end dates
+- `App.jsx` — added `/projects` and `/projects/:id` routes; removed stale Projects placeholder function
+
+**Key decisions made:**
+- Project number generated at insert time from a fresh `firm_settings` fetch (not from FirmContext cache) — avoids stale sequence if multiple projects are added in the same session
+- `AddMemberForm` lives inside `ProjectDetail.jsx` (not a separate file) — it's project-scoped and has no reuse case
+- Team assignment remove is soft-delete (`is_active = false`) per spec's "soft delete only" rule
+- `public.users` fetch for team assignment dropdown will return empty until Supabase Auth users + `public.users` rows are populated — handled gracefully with a helper message
+
+**Files created/modified:**
+- `src/pages/ProjectsPage.jsx` — new
+- `src/pages/ProjectDetailPage.jsx` — new
+- `src/components/projects/ProjectList.jsx` — new
+- `src/components/projects/ProjectForm.jsx` — new
+- `src/components/projects/ProjectDetail.jsx` — new (includes AddMemberForm)
+- `src/App.jsx` — updated routes
+
+**Verification confirmed:**
+- `npm run build` — 0 errors, 84 modules, clean production build
+- Committed and pushed: `cd8b2c7` — "Session 3: Projects module"
+
+**Where we left off:** Projects module fully complete and committed. All six files build clean.
+**Next session:** Session 4 — Fee Development module
+
+---
+
+*Last updated: 2026-05-26*
+*Updated by: Claude Code — Session 3*
+*Status: Session 3 complete — ready for Session 4*
