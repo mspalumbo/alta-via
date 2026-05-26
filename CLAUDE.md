@@ -1573,10 +1573,40 @@ of the task before beginning."
 - Committed and pushed: `cd8b2c7` — "Session 3: Projects module"
 
 **Where we left off:** Projects module fully complete and committed. All six files build clean.
-**Next session:** Session 4 — Fee Development module
+**Next session:** Session 4 — Rate Cards module (built this session)
+
+---
+
+### Session 4 — 2026-05-26
+**Objective:** Rate Cards module — two-section list, insert-only form, End Rate soft-deactivation
+
+**What was built:**
+- `RateCardsPage.jsx` — page wrapper
+- `RateCardList.jsx` — single fetch splits into Role-Based and Person-Specific sections client-side; reusable `RateSection` sub-component (not exported); per-section inactive toggle shows/hides ended rates; "End Rate" sets `end_date = today` and `is_active = false` (no confirm — consistent with deactivate pattern from ContactList); `internal_cost_rate` column always shows "—" (role-gated in Phase 4); Person-Specific section shows user name from `users` join or truncated UUID if no user row
+- `RateCardForm.jsx` — insert-only (no update path); rate_type radio (Role-Based / Person-Specific); Person-Specific shows user UUID text input with Phase 4 note; amber info banner reinforces immutability; `effective_date` defaults to today; `internal_cost_rate` field present but optional
+- `App.jsx` — replaced `Rates` placeholder with `RateCardsPage`
+
+**Key decisions made:**
+- One fetch for all rates, split client-side by `rate_type` — simpler than two separate fetches, avoids duplicate loading states
+- `RateSection` lives inside `RateCardList.jsx` — it's not reused anywhere else and keeping it co-located avoids file proliferation
+- "End Rate" does NOT show a confirmation dialog — consistent with `handleDeactivate` pattern established in ContactList; the button label is explicit enough
+- Person-Specific `user_id` field is a raw UUID text input for now with a clear note; user picker deferred to Phase 4
+
+**Files created/modified:**
+- `src/pages/RateCardsPage.jsx` — new
+- `src/components/rates/RateCardList.jsx` — new
+- `src/components/rates/RateCardForm.jsx` — new
+- `src/App.jsx` — updated routes
+
+**Verification confirmed:**
+- `npm run build` — 0 errors, 87 modules, clean production build
+- Committed and pushed: `4bc6b30` — "Session 4: Rate Cards module"
+
+**Where we left off:** Rate Cards module fully complete and committed.
+**Next session:** Session 5 — Fee Development module
 
 ---
 
 *Last updated: 2026-05-26*
-*Updated by: Claude Code — Session 3*
-*Status: Session 3 complete — ready for Session 4*
+*Updated by: Claude Code — Session 4*
+*Status: Session 4 complete — ready for Session 5*
