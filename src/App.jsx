@@ -2,13 +2,12 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import PageWrapper from './components/layout/PageWrapper'
 import ClientsPage from './pages/ClientsPage'
 import ClientDetailPage from './pages/ClientDetailPage'
+import ProjectsPage from './pages/ProjectsPage'
+import ProjectDetailPage from './pages/ProjectDetailPage'
 
 // Placeholder pages — will be replaced as modules are built
 function Dashboard() {
   return <PageWrapper breadcrumb="Dashboard"><div className="text-[#1A1A2E]">Dashboard — coming soon</div></PageWrapper>
-}
-function Projects() {
-  return <PageWrapper breadcrumb="Projects"><div className="text-[#1A1A2E]">Projects — coming soon</div></PageWrapper>
 }
 function Fees() {
   return <PageWrapper breadcrumb="Fee Development"><div className="text-[#1A1A2E]">Fee Development — coming soon</div></PageWrapper>
@@ -30,7 +29,8 @@ export default function App() {
         <Route path="/" element={<Dashboard />} />
         <Route path="/clients" element={<ClientsPage />} />
         <Route path="/clients/:id" element={<ClientDetailPage />} />
-        <Route path="/projects" element={<Projects />} />
+        <Route path="/projects" element={<ProjectsPage />} />
+        <Route path="/projects/:id" element={<ProjectDetailPage />} />
         <Route path="/fees" element={<Fees />} />
         <Route path="/rates" element={<Rates />} />
         <Route path="/timesheets" element={<Timesheets />} />
