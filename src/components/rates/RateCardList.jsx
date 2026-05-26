@@ -105,11 +105,7 @@ function RateSection({ title, rates, loading, onAdd, onEndRate, showInactive, on
                   >
                     {isPersonSpecific && (
                       <td className="py-2 pr-4 pl-2 whitespace-nowrap text-[#6B7280] text-xs font-mono">
-                        {rate.users
-                          ? `${rate.users.first_name} ${rate.users.last_name}`
-                          : rate.user_id
-                          ? rate.user_id.slice(0, 8) + '…'
-                          : '—'}
+                        {rate.user_id ? rate.user_id.slice(0, 8) + '…' : '—'}
                       </td>
                     )}
                     <td className={`py-2 pr-4 ${!isPersonSpecific ? 'pl-2' : ''} whitespace-nowrap font-medium text-[#1A1A2E]`}>
@@ -169,7 +165,7 @@ export default function RateCardList() {
     setLoading(true)
     const { data, error } = await supabase
       .from('rate_cards')
-      .select('*, users(user_id, first_name, last_name)')
+      .select('*')
       .order('role', { ascending: true })
       .order('effective_date', { ascending: false })
 
