@@ -1603,10 +1603,46 @@ of the task before beginning."
 - Committed and pushed: `4bc6b30` — "Session 4: Rate Cards module"
 
 **Where we left off:** Rate Cards module fully complete and committed.
-**Next session:** Session 5 — Fee Development module
+**Next session:** Session 5a — Fee Development foundation
+
+---
+
+### Session 5a — 2026-05-26
+**Objective:** Fee Development foundation — fee records list, create fee, detail with status workflow
+
+**What was built:**
+- `FeesPage.jsx` — page wrapper for firm-wide fee list
+- `FeeDetailPage.jsx` — page wrapper for fee detail
+- `FeeList.jsx` — dual-mode component: firm-wide (all columns, project selector in Add Fee flow) and embedded/project-scoped (compact header, no project columns, direct Add Fee). `ProjectSelectorStep` sub-component lives inside the file (firm-wide Add Fee step 1 — pick a project). Embedded mode triggered by `projectId` prop.
+- `FeeForm.jsx` — insert-only; shows project context banner at top; status always defaults to Draft; method dropdown with all four options
+- `FeeDetail.jsx` — full header with project link (clickable → /projects/:id); status workflow action bar: Draft → "Submit for Review", Under-Review → "Execute Fee" + "Return to Draft", non-terminal → "Supersede"; Execute Fee checks for existing Executed fee on project and blocks with clear error if found; Edit modal for fee_name/notes only (hidden on Executed fees); green immutability notice on Executed fees; placeholder cards for Line Items (5b), Discounts (5c), Staffing Projection (5d); `EditFeeForm` sub-component lives inside the file
+- `ProjectDetail.jsx` — Fee Development placeholder replaced with `<FeeList projectId={id} projectName={project.project_name} />`
+- `App.jsx` — `/fees` and `/fees/:id` routes wired; `Fees` placeholder function removed
+
+**Key decisions made:**
+- `FeeList` is a single dual-mode component rather than two separate components — avoids duplicating table logic; `embedded` boolean derived from presence of `projectId` prop
+- `ProjectSelectorStep` and `EditFeeForm` are co-located inside their parent files — no standalone reuse case
+- Supersede is available for Draft and Under-Review only (not Executed per spec directive — "Executed requires executing a replacement first")
+- `isTerminal` flag covers both Executed and Superseded — neither shows the action bar
+
+**Files created/modified:**
+- `src/pages/FeesPage.jsx` — new
+- `src/pages/FeeDetailPage.jsx` — new
+- `src/components/fees/FeeList.jsx` — new
+- `src/components/fees/FeeForm.jsx` — new
+- `src/components/fees/FeeDetail.jsx` — new
+- `src/components/projects/ProjectDetail.jsx` — updated (Fee Development section)
+- `src/App.jsx` — updated routes
+
+**Verification confirmed:**
+- `npm run build` — 0 errors, 92 modules, clean production build
+- Committed and pushed: `d05edfa` — "Session 5a: Fee Development foundation"
+
+**Where we left off:** Fee records can be created, viewed, and moved through the status workflow. FeeDetail has placeholder sections for 5b/5c/5d.
+**Next session:** Session 5b — Fee Line Items (Scope-Based method builder)
 
 ---
 
 *Last updated: 2026-05-26*
-*Updated by: Claude Code — Session 4*
-*Status: Session 4 complete — ready for Session 5*
+*Updated by: Claude Code — Session 5a*
+*Status: Session 5a complete — ready for Session 5b*
