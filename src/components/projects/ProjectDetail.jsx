@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import Modal from '../ui/Modal'
 import ProjectForm from './ProjectForm'
+import FeeList from '../fees/FeeList'
 
 const STATUS_STYLES = {
   'Pursuit':   'bg-gray-100 text-[#6B7280]',
@@ -271,10 +272,9 @@ export default function ProjectDetail() {
         )}
       </div>
 
-      {/* Fee Development placeholder */}
+      {/* Fee Development */}
       <div className="bg-white rounded border border-[#E5E7EB] p-6 mb-4">
-        <h2 className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide mb-3">Fee Development</h2>
-        <div className="text-sm text-[#6B7280]">Fee development will appear here once the Fee module is built.</div>
+        <FeeList projectId={id} projectName={project.project_name} />
       </div>
 
       {/* Invoices placeholder */}
