@@ -1,5 +1,5 @@
 -- ============================================================
--- Alta•Via — Migration 001: Schema
+-- Cortina — Migration 001: Schema
 -- Run in Supabase SQL Editor (Dashboard → SQL Editor → New query)
 -- ============================================================
 

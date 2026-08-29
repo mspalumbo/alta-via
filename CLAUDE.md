@@ -1,6 +1,6 @@
-# CLAUDE.md — Alta•Via Master Spec & Build Context
+# CLAUDE.md — Cortina Master Spec & Build Context
 
-> This file is the authoritative reference for every Alta•Via build session.
+> This file is the authoritative reference for every Cortina build session.
 > Read this fully before writing any code. All architectural decisions, module specs,
 > data relationships, and build conventions live here.
 > Update the BUILD LOG section at the end of every session.
@@ -9,28 +9,28 @@
 
 ## 1. PRODUCT OVERVIEW
 
-**Alta•Via** is a Professional Services Automation (PSA) platform purpose-built for
+**Cortina** is a Professional Services Automation (PSA) platform purpose-built for
 owner's representative firms in the construction industry. It is the internal operational
 backbone of Palumbo Management Group (PMG) — tracking every project from earliest
 pursuit through final invoice and collections.
 
-Alta•Via is a companion product to Vetta (external-facing project management) and
+Cortina is a companion product to Vetta (external-facing project management) and
 will eventually be sold alongside Vetta as part of a suite of tools for owner's rep firms.
 It is built internal-first, universal by design.
 
 **The core problem it solves:**
 Owner's rep firms manage projects, fees, people, time, and billing across fragmented
 tools — spreadsheets, QuickBooks, generic PSA platforms — none of which are built
-for this specific business model. Alta•Via replaces all of them with one integrated platform.
+for this specific business model. Cortina replaces all of them with one integrated platform.
 
 **Product family:**
 - Collina — household budget app (separate repo)
 - Vetta — client-facing project management (separate repo)
-- Alta•Via — internal practice management (this repo)
+- Cortina — internal practice management (this repo)
 - Archivio — qualifications & BD database (future, concept only)
 
 **The suite sales motion:**
-Vetta is sold first (project management). Alta•Via is the natural second conversation
+Vetta is sold first (project management). Cortina is the natural second conversation
 (how are you managing time, billing, and firm performance?). Archivio is the third
 (how is your marketing team handling pursuits and SOQs?). Each product stands alone
 but they share project and client data as a connected ecosystem.
@@ -41,17 +41,17 @@ but they share project and client data as a connected ecosystem.
 
 ### 2.1 Brand Identity
 
-**Product name:** Alta•Via
+**Product name:** Cortina
 - The dot separator is intentional — it makes the two-word name easier to read
   and less likely to be mispronounced
 - Drop the dot only in plain text contexts where it may cause issues
-- Always render as ALTA•VIA in the wordmark (all caps)
+- Always render as CORTINA in the wordmark (all caps)
 
 **Mark:** Angular AV mountain mark with orange sun accent
 - The A (mountain peak) and V (descending valley) in the mark are geometric mirrors
-- The same mirror logic appears in the ALTA•VIA wordmark — A and V are mirrors
+- The same mirror logic appears in the CORTINA wordmark — A and V are mirrors
 - This is an intentional, layered brand decision — preserve it in all UI treatments
-- The mark encodes the initials AV for Alta Via while reading as a mountain landscape
+- The mark encodes the initials AV for Cortina while reading as a mountain landscape
 
 **Typography:** Geometric sans serif — Futura or equivalent
 - All-caps wordmark
@@ -83,7 +83,7 @@ but they share project and client data as a connected ecosystem.
 
 **Accent usage — CRITICAL:**
 Orange #F2903A is a signal color, not a base color. It appears in:
-- The sun accent in the Alta•Via logo mark
+- The sun accent in the Cortina logo mark
 - The active navigation item icon in the sidebar
 - Primary CTA buttons
 - Key highlight moments (alerts, warnings, critical actions)
@@ -136,7 +136,7 @@ Orange must NOT appear in:
 
 **Navigation structure:**
 - Fixed left sidebar, #142538 background
-- Alta•Via logo mark + wordmark at top of sidebar
+- Cortina logo mark + wordmark at top of sidebar
 - Module navigation items below
 - Main content area to the right — white/near-white background
 - Top bar: breadcrumb + user menu + notifications
@@ -161,7 +161,7 @@ Orange must NOT appear in:
 
 **This is a responsive-first build. No exceptions.**
 
-Alta•Via will be used on:
+Cortina will be used on:
 - Desktop (primary for fee development, invoicing, reporting)
 - iPad (primary for timesheet entry — treat as equal priority to desktop)
 - Mobile (secondary — at minimum timesheets must work on mobile)
@@ -181,7 +181,7 @@ path stays open. Do not make architectural decisions that would prevent this.
 
 **Lesson from Vetta:**
 Vetta accumulated responsive debt by not building mobile-first from day one.
-Alta•Via must not repeat this. If a component is not responsive when it is
+Cortina must not repeat this. If a component is not responsive when it is
 first built, it is not complete.
 
 ---
@@ -306,7 +306,7 @@ User Roles & Permissions full UI, Reporting & Dashboard
 
 **Purpose:** Single source of truth for all client information.
 Referenced by Projects, Contracts, and Invoicing. Data entered once, flows everywhere.
-Never re-enter client data anywhere else in Alta•Via.
+Never re-enter client data anywhere else in Cortina.
 
 **clients table:**
 ```sql
@@ -353,7 +353,7 @@ created_at           timestamptz default now()
 ### 6.2 PROJECTS
 
 **Purpose:** The master record. Every other module references a project.
-Nothing in Alta•Via exists without a project anchor.
+Nothing in Cortina exists without a project anchor.
 
 **projects table:**
 ```sql
@@ -654,7 +654,7 @@ projected_hours and projected_amount in Baseline records are permanent.
 
 ### 6.4 RATE CARDS
 
-**Purpose:** Every billing rate in Alta•Via flows from here.
+**Purpose:** Every billing rate in Cortina flows from here.
 Historical accuracy is non-negotiable — timesheet entries always calculate
 at the rate in effect on the date the work was performed.
 
@@ -1136,7 +1136,7 @@ clear status tracking, no workarounds that would complicate export later).
 
 ## 7. PHASE 2 — INTELLIGENCE LAYER (Future Spec)
 
-To be fully specced in Alta•Via Workshop before build begins.
+To be fully specced in Cortina Workshop before build begins.
 
 **Financial Projections**
 Firm-level revenue view combining all active project re-forecasts.
@@ -1194,7 +1194,7 @@ Third product in the Vetta suite. Not in scope for this build.
 **Concept:** Qualifications and experience database.
 Search employees by project type, client, scope, keywords.
 Generate pursuit-specific and project-specific resumes per employee.
-Pull project data from Vetta and Alta•Via automatically — no re-entry.
+Pull project data from Vetta and Cortina automatically — no re-entry.
 Serves BD and marketing functions.
 
 Name "Archivio" is a placeholder — naming not yet finalized.
@@ -1417,8 +1417,8 @@ Write and run seed script for:
 
 ## 15. WORKSHOP → BUILD HANDOFF PROTOCOL
 
-This chat (Alta•Via Workshop) handles all strategy and spec decisions.
-Claude Code (Alta•Via Build) handles all implementation.
+This chat (Cortina Workshop) handles all strategy and spec decisions.
+Claude Code (Cortina Build) handles all implementation.
 
 **When to come back to Workshop:**
 - Something isn't working as specced — discuss before hacking a workaround
@@ -1643,6 +1643,25 @@ of the task before beginning."
 
 ---
 
-*Last updated: 2026-05-26*
-*Updated by: Claude Code — Session 5a*
-*Status: Session 5a complete — ready for Session 5b*
+### Rename — 2026-08-29
+**Objective:** Product rename — Alta•Via → Cortina across the entire codebase.
+
+**What changed:**
+- `CLAUDE.md` — every "Alta•Via" → "Cortina", "ALTA•VIA" → "CORTINA" (20 + 2 occurrences), including "Alta•Via Workshop/Build" → "Cortina Workshop/Build". The lowercase `alta-via` in the Session 1 GitHub-repo and Supabase-project setup steps was left as-is (those name the actual repo and Supabase project, which are not being renamed).
+- `src/components/layout/Sidebar.jsx` — wordmark "ALTA•VIA" → "CORTINA" (desktop + mobile).
+- `src/components/layout/TopBar.jsx` — firm-name fallback `'Alta•Via'` → `'Cortina'`.
+- `package.json` — `name` field `alta-via` → `cortina`.
+- `index.html` — `<title>` `alta-via` → `Cortina`.
+- `supabase/migrations/001_schema.sql`, `002_rls.sql`, `003_seed.sql` — header comment "Alta•Via — Migration NNN" → "Cortina — Migration NNN".
+
+**Not changed (per directive):** folder path (`Documents/alta-via`), GitHub remote URL, Supabase project URL/credentials, all color values and design tokens, component/file names. `package-lock.json` still carries `"name": "alta-via"` — regenerates on next `npm install`.
+
+**Verification confirmed:**
+- `npm run build` — 0 errors, 92 modules, clean production build
+- Committed and pushed: "Rename Alta•Via to Cortina throughout codebase"
+
+---
+
+*Last updated: 2026-08-29*
+*Updated by: Claude Code — Product rename to Cortina*
+*Status: Rename complete — ready for Session 5b*

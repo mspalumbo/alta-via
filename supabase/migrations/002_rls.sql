@@ -1,5 +1,5 @@
 -- ============================================================
--- Alta•Via — Migration 002: Row Level Security
+-- Cortina — Migration 002: Row Level Security
 -- Run AFTER 001_schema.sql
 -- ============================================================
 

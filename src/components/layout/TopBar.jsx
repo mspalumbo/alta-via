@@ -10,7 +10,7 @@ export default function TopBar({ breadcrumb }) {
       {/* Breadcrumb */}
       <div className="text-sm text-[#6B7280]">
         <span className="text-[#1A1A2E] font-medium">
-          {firm?.firm_name ?? 'Alta•Via'}
+          {firm?.firm_name ?? 'Cortina'}
         </span>
         {breadcrumb && (
           <>
