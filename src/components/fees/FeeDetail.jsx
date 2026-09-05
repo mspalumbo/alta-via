@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import Modal from '../ui/Modal'
+import FeeLineItems from './FeeLineItems'
 
 const STATUS_STYLES = {
   'Draft':        'bg-gray-100 text-[#6B7280]',
@@ -333,10 +334,15 @@ export default function FeeDetail() {
         </div>
       </div>
 
-      {/* Line Items placeholder — Session 5b */}
+      {/* Line Items — Session 5b */}
       <div className="bg-white rounded border border-[#E5E7EB] p-6 mb-4">
         <h2 className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide mb-3">Line Items</h2>
-        <div className="text-sm text-[#6B7280]">Fee line items will be built in Session 5b.</div>
+        <FeeLineItems
+          feeId={fee.fee_id}
+          feeMethod={fee.method}
+          isExecuted={isExecuted}
+          onTotalChange={(newTotal) => setFee(prev => ({ ...prev, total_fee: newTotal }))}
+        />
       </div>
 
       {/* Discounts placeholder — Session 5c */}
