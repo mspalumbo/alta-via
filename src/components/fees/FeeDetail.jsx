@@ -28,8 +28,44 @@ function formatDate(val) {
 function Field({ label, value }) {
   return (
     <div>
-      <div className="text-xs text-[#6B7280] mb-1">{label}</div>
-      <div className="text-sm text-[#1A1A2E]">{value ?? '—'}</div>
+      <div className="text-xs uppercase tracking-wide text-[#6B7280] mb-1">{label}</div>
+      <div className="text-sm font-medium text-[#1A1A2E]">{value ?? '—'}</div>
+    </div>
+  )
+}
+
+const DURATION_UNITS = ['Weeks', 'Months']
+
+// Inline duration control shown in the Fee Summary card for Scope-Based fees.
+function DurationInline({ label, value, unit, readOnly, onCommit, onUnitChange }) {
+  const roCls = readOnly ? 'bg-[#F8F9FA]' : ''
+  const ctrl =
+    'border border-[#E5E7EB] rounded px-2 py-1 text-sm text-[#1A1A2E] focus:outline-none focus:ring-1 focus:ring-[#F2903A]'
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-xs text-[#6B7280] uppercase tracking-wide">{label}</span>
+      <input
+        key={`${label}-${value ?? ''}`}
+        type="number"
+        step="any"
+        min="0"
+        inputMode="decimal"
+        defaultValue={value ?? ''}
+        readOnly={readOnly}
+        onBlur={(e) => onCommit(e.target.value)}
+        placeholder="0"
+        className={`w-20 ${ctrl} ${roCls}`}
+      />
+      <select
+        value={unit}
+        disabled={readOnly}
+        onChange={(e) => onUnitChange(e.target.value)}
+        className={`${ctrl} ${roCls}`}
+      >
+        {DURATION_UNITS.map((u) => (
+          <option key={u} value={u}>{u}</option>
+        ))}
+      </select>
     </div>
   )
 }
@@ -116,7 +152,9 @@ export default function FeeDetail() {
     setLoading(true)
     const { data, error } = await supabase
       .from('fee_records')
-      .select('*, projects(project_id, project_name, project_number, client_id)')
+      .select(
+        '*, preconstruction_duration, preconstruction_duration_unit, construction_duration, construction_duration_unit, projects(project_id, project_name, project_number, client_id)',
+      )
       .eq('fee_id', id)
       .single()
 
@@ -215,8 +253,31 @@ export default function FeeDetail() {
   const isExecuted = fee.status === 'Executed'
   const isTerminal = fee.status === 'Executed' || fee.status === 'Superseded'
 
+  async function saveDurationField(field, value) {
+    setFee((prev) => ({ ...prev, [field]: value }))
+    const { error } = await supabase
+      .from('fee_records')
+      .update({ [field]: value })
+      .eq('fee_id', id)
+    if (error) setActionError(error.message)
+  }
+
+  function commitDuration(phase, raw) {
+    if (isExecuted) return
+    const trimmed = String(raw).trim()
+    const parsed = parseFloat(trimmed)
+    const value =
+      trimmed !== '' && Number.isFinite(parsed) && parsed >= 0 ? parsed : null
+    saveDurationField(`${phase}_duration`, value)
+  }
+
+  function changeDurationUnit(phase, value) {
+    if (isExecuted) return
+    saveDurationField(`${phase}_duration_unit`, value)
+  }
+
   return (
-    <div className="max-w-4xl">
+    <div className="w-full max-w-full">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-6">
         <div>
@@ -317,21 +378,43 @@ export default function FeeDetail() {
       )}
 
       {/* Fee Summary */}
-      <div className="bg-white rounded border border-[#E5E7EB] p-6 mb-4">
-        <h2 className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide mb-4">Fee Summary</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+      <div className="bg-white rounded border border-[#E5E7EB] p-4 mb-4">
+        <h2 className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide mb-3">Fee Summary</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Field label="Method" value={fee.method} />
           <Field label="Total Fee" value={formatCurrency(fee.total_fee)} />
           <Field label="Discounted Fee" value={formatCurrency(fee.discounted_fee)} />
           <Field label="Created" value={formatDate(fee.created_at)} />
           {fee.executed_at && <Field label="Executed" value={formatDate(fee.executed_at)} />}
-          {fee.notes && (
-            <div className="sm:col-span-3">
-              <div className="text-xs text-[#6B7280] mb-1">Notes</div>
-              <div className="text-sm text-[#1A1A2E]">{fee.notes}</div>
-            </div>
-          )}
         </div>
+
+        {fee.notes && (
+          <div className="mt-3">
+            <div className="text-xs uppercase tracking-wide text-[#6B7280] mb-1">Notes</div>
+            <div className="text-sm text-[#1A1A2E]">{fee.notes}</div>
+          </div>
+        )}
+
+        {fee.method === 'Scope-Based' && (
+          <div className="border-t border-[#E5E7EB] mt-3 pt-3 flex flex-col sm:flex-row sm:items-center gap-4">
+            <DurationInline
+              label="Preconstruction"
+              value={fee.preconstruction_duration}
+              unit={fee.preconstruction_duration_unit || 'Months'}
+              readOnly={isExecuted}
+              onCommit={(v) => commitDuration('preconstruction', v)}
+              onUnitChange={(v) => changeDurationUnit('preconstruction', v)}
+            />
+            <DurationInline
+              label="Construction"
+              value={fee.construction_duration}
+              unit={fee.construction_duration_unit || 'Months'}
+              readOnly={isExecuted}
+              onCommit={(v) => commitDuration('construction', v)}
+              onUnitChange={(v) => changeDurationUnit('construction', v)}
+            />
+          </div>
+        )}
       </div>
 
       {/* Line Items — Session 5b */}
@@ -342,6 +425,12 @@ export default function FeeDetail() {
           feeMethod={fee.method}
           isExecuted={isExecuted}
           onTotalChange={(newTotal) => setFee(prev => ({ ...prev, total_fee: newTotal }))}
+          durations={{
+            preDuration: fee.preconstruction_duration,
+            preDurationUnit: fee.preconstruction_duration_unit || 'Months',
+            conDuration: fee.construction_duration,
+            conDurationUnit: fee.construction_duration_unit || 'Months',
+          }}
         />
       </div>
 

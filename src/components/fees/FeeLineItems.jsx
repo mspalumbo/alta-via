@@ -2,7 +2,11 @@ import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 
 const PARTICIPATION = ['High', 'Medium', 'Low']
-const UNITS = ['ls', 'ea', 'wks', 'mon', 'hr']
+const UNIT_OPTIONS = [
+  { value: 'per-week', label: 'Per Week' },
+  { value: 'per-month', label: 'Per Month' },
+  { value: 'total', label: 'Total' },
+]
 const ROLES = ['PM', 'Contracts', 'CM', 'Scheduling', 'Sustainability', 'Custom']
 
 const PHASE_ORDER = ['Preconstruction', 'Construction']
@@ -32,6 +36,44 @@ function fmtCurrency(v) {
 
 function fmtNum(v) {
   return Number(v ?? 0).toLocaleString('en-US', { maximumFractionDigits: 2 })
+}
+
+// Preconstruction categories are A–E; Construction is F–I.
+const PRECON_CATEGORIES = CATEGORY_ORDER.slice(0, 5)
+
+// Map legacy scope_unit_enum values ('ls','ea','wks','mon','hr') onto the
+// current per-week / per-month / total set so pre-existing rows render
+// correctly without a data migration.
+function normalizeUnit(u) {
+  if (u === 'per-week' || u === 'wks') return 'per-week'
+  if (u === 'per-month' || u === 'mon') return 'per-month'
+  return 'total'
+}
+
+// Phase a line item belongs to: explicit scope_library.phase, else inferred
+// from its category, else Preconstruction (custom items have no scope row).
+function itemPhase(item) {
+  const ph = item.scope_library?.phase
+  if (ph === 'Preconstruction' || ph === 'Construction') return ph
+  const cat = item.scope_library?.category
+  if (cat) return PRECON_CATEGORIES.includes(cat) ? 'Preconstruction' : 'Construction'
+  return 'Preconstruction'
+}
+
+// Suggested quantity for per-week / per-month units, derived from the phase
+// duration. Informational only — never written to the Qty field.
+// Returns null when the unit is 'total' (no hint shown).
+function computeAutoQty(unit, phase, durations) {
+  if (unit !== 'per-week' && unit !== 'per-month') return null
+  const isPre = phase === 'Preconstruction'
+  const dur = parseFloat(isPre ? durations.preDuration : durations.conDuration)
+  const durUnit = isPre ? durations.preDurationUnit : durations.conDurationUnit
+  if (!Number.isFinite(dur) || dur === 0) return 0
+  let qty
+  if (unit === 'per-week') qty = durUnit === 'Weeks' ? dur : dur * 4.33
+  else qty = durUnit === 'Months' ? dur : dur / 4.33
+  // 'per-week' quantities are whole weeks — always round up; 'per-month' keeps 1 decimal.
+  return unit === 'per-week' ? Math.ceil(qty) : Math.round(qty * 10) / 10
 }
 
 // ---------------------------------------------------------------------------
@@ -112,8 +154,32 @@ function ScopeLibraryBrowser({ library, addedScopeIds, onAdd, search, setSearch,
 // ---------------------------------------------------------------------------
 // One editable line-item row
 // ---------------------------------------------------------------------------
-function LineRow({ item, index, readOnly, showDelete, onUpdate, onDelete }) {
+function LineRow({ item, index, readOnly, showDelete, durations, onUpdate, onUpdateFields, onDelete }) {
   const activity = item.scope_library?.activity_name ?? item.custom_description ?? '—'
+  const normUnit = normalizeUnit(item.unit)
+  const autoQty = computeAutoQty(normUnit, itemPhase(item), durations)
+  // Auto mode = per-week / per-month unit with a phase duration set (autoQty non-null).
+  const isAutoMode = autoQty != null
+  const isOverridden = item.qty_override ?? false
+
+  // In auto mode the field shows autoQty until the user overrides it; an override
+  // (qty_override = true) pins the saved manual quantity and survives duration changes.
+  const displayQty = isAutoMode && !isOverridden ? autoQty : item.quantity ?? 0
+  const [localQty, setLocalQty] = useState(displayQty)
+  useEffect(() => {
+    setLocalQty(displayQty)
+  }, [displayQty])
+
+  function commitQty(raw) {
+    const parsed = parseFloat(raw)
+    const next = Number.isFinite(parsed) ? parsed : 0
+    const override = isAutoMode && next !== autoQty
+    onUpdateFields(item.line_item_id, { quantity: next, qty_override: override })
+  }
+
+  function resetQtyOverride() {
+    onUpdateFields(item.line_item_id, { qty_override: false, quantity: autoQty })
+  }
 
   function commitNumber(field, raw) {
     const parsed = parseFloat(raw)
@@ -129,7 +195,15 @@ function LineRow({ item, index, readOnly, showDelete, onUpdate, onDelete }) {
   }
 
   const roCls = readOnly ? 'bg-[#F8F9FA]' : ''
+  const qtyBg = readOnly
+    ? 'bg-[#F8F9FA]'
+    : isOverridden
+      ? 'bg-amber-50'
+      : isAutoMode
+        ? 'bg-blue-50'
+        : ''
   const numInput = `w-16 text-right ${CELL_INPUT} ${roCls}`
+  const qtyInput = `w-16 text-right ${CELL_INPUT} ${qtyBg}`
   const selInput = `${CELL_INPUT} ${roCls}`
 
   return (
@@ -152,28 +226,42 @@ function LineRow({ item, index, readOnly, showDelete, onUpdate, onDelete }) {
 
       <td className="px-2 py-2">
         <select
-          value={item.unit ?? 'ls'}
+          value={normUnit}
           disabled={readOnly}
-          onChange={(e) => onUpdate(item.line_item_id, 'unit', e.target.value)}
-          className={`w-16 ${selInput}`}
+          onChange={(e) =>
+            onUpdateFields(item.line_item_id, { unit: e.target.value, qty_override: false })
+          }
+          className={`w-28 ${selInput}`}
         >
-          {UNITS.map((u) => (
-            <option key={u} value={u}>{u}</option>
+          {UNIT_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>{o.label}</option>
           ))}
         </select>
       </td>
 
       <td className="px-2 py-2">
         <input
-          key={`${item.line_item_id}-qty-${item.quantity}`}
           type="number"
           step="any"
           inputMode="decimal"
-          defaultValue={item.quantity ?? 0}
+          value={localQty}
+          onChange={(e) => setLocalQty(e.target.value)}
           readOnly={readOnly}
-          onBlur={(e) => commitNumber('quantity', e.target.value)}
-          className={numInput}
+          onBlur={(e) => commitQty(e.target.value)}
+          className={qtyInput}
         />
+        {!readOnly && isOverridden && (
+          <button
+            type="button"
+            onClick={resetQtyOverride}
+            className="block w-16 text-right text-[11px] text-[#F59E0B] hover:underline mt-0.5"
+          >
+            override ↺
+          </button>
+        )}
+        {!readOnly && isAutoMode && !isOverridden && (
+          <div className="w-16 text-right text-[11px] text-[#6B7280] mt-0.5">auto ↺</div>
+        )}
       </td>
 
       <td className="px-2 py-2">
@@ -283,7 +371,7 @@ function BlankRow({ totalCols, onAdd, resetKey, busy }) {
 // ---------------------------------------------------------------------------
 // Main component
 // ---------------------------------------------------------------------------
-export default function FeeLineItems({ feeId, feeMethod, isExecuted, onTotalChange }) {
+export default function FeeLineItems({ feeId, feeMethod, isExecuted, onTotalChange, durations }) {
   const isScopeBased = feeMethod === 'Scope-Based'
 
   const [items, setItems] = useState([])
@@ -309,7 +397,7 @@ export default function FeeLineItems({ feeId, feeMethod, isExecuted, onTotalChan
           .order('sort_order', { ascending: true }),
         supabase
           .from('fee_line_items')
-          .select('*, scope_library(activity_name, item_number)')
+          .select('*, scope_library(activity_name, item_number, phase, category)')
           .eq('fee_id', feeId)
           .order('sort_order', { ascending: true }),
       ])
@@ -331,7 +419,7 @@ export default function FeeLineItems({ feeId, feeMethod, isExecuted, onTotalChan
   async function reloadItems({ writeTotal = false } = {}) {
     const { data, error } = await supabase
       .from('fee_line_items')
-      .select('*, scope_library(activity_name, item_number)')
+      .select('*, scope_library(activity_name, item_number, phase, category)')
       .eq('fee_id', feeId)
       .order('sort_order', { ascending: true })
     if (error) {
@@ -362,7 +450,7 @@ export default function FeeLineItems({ feeId, feeMethod, isExecuted, onTotalChan
         scope_item_id: scopeItem.scope_item_id,
         custom_description: null,
         participation_level: scopeItem.default_participation_level || 'Medium',
-        unit: scopeItem.default_unit || 'ls',
+        unit: normalizeUnit(scopeItem.default_unit),
         quantity: 1,
         hours_per_unit: 0,
         role: scopeItem.default_role || 'PM',
@@ -385,7 +473,7 @@ export default function FeeLineItems({ feeId, feeMethod, isExecuted, onTotalChan
         scope_item_id: null,
         custom_description: text,
         participation_level: 'Medium',
-        unit: 'ls',
+        unit: 'total',
         quantity: 1,
         hours_per_unit: 0,
         role: 'PM',
@@ -412,6 +500,18 @@ export default function FeeLineItems({ feeId, feeMethod, isExecuted, onTotalChan
     await reloadItems({ writeTotal: true })
   }
 
+  // Multi-column update (Qty cell): quantity + qty_override, or unit + qty_override, together.
+  async function updateFields(id, patch) {
+    if (isExecuted) return
+    setItems((prev) => prev.map((i) => (i.line_item_id === id ? { ...i, ...patch } : i)))
+    const { error } = await supabase
+      .from('fee_line_items')
+      .update(patch)
+      .eq('line_item_id', id)
+    if (error) console.error('Error updating line item:', error)
+    await reloadItems({ writeTotal: true })
+  }
+
   async function deleteItem(id) {
     if (isExecuted) return
     const { error } = await supabase.from('fee_line_items').delete().eq('line_item_id', id)
@@ -429,7 +529,7 @@ export default function FeeLineItems({ feeId, feeMethod, isExecuted, onTotalChan
   const cols = isExecuted ? 11 : 12
 
   return (
-    <div className="flex flex-col lg:flex-row gap-4">
+    <div className="flex flex-col lg:flex-row gap-4 w-full">
       {!isExecuted && (
         <div className="lg:w-[280px] lg:flex-shrink-0">
           <ScopeLibraryBrowser
@@ -487,7 +587,9 @@ export default function FeeLineItems({ feeId, feeMethod, isExecuted, onTotalChan
                     index={idx}
                     readOnly={isExecuted}
                     showDelete={!isExecuted}
+                    durations={durations}
                     onUpdate={updateField}
+                    onUpdateFields={updateFields}
                     onDelete={deleteItem}
                   />
                 ))}
