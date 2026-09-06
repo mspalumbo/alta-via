@@ -76,6 +76,32 @@ function computeAutoQty(unit, phase, durations) {
   return unit === 'per-week' ? Math.ceil(qty) : Math.round(qty * 10) / 10
 }
 
+// Flatten line items into category-grouped render rows: a header row for each
+// non-empty category (CATEGORY_ORDER, then 'Custom' last) followed by its items.
+// The # column (rowIndex) runs continuously across every group.
+function buildGroupedRows(items) {
+  const byCategory = new Map()
+  for (const it of items) {
+    const cat = it.scope_library?.category ?? 'Custom'
+    if (!byCategory.has(cat)) byCategory.set(cat, [])
+    byCategory.get(cat).push(it)
+  }
+  const rows = []
+  let rowIndex = 0
+  for (const cat of [...CATEGORY_ORDER, 'Custom']) {
+    const group = byCategory.get(cat)
+    if (!group || group.length === 0) continue
+    const totalHrs = group.reduce((s, it) => s + Number(it.total_hours ?? 0), 0)
+    const totalFee = group.reduce((s, it) => s + Number(it.line_total ?? 0), 0)
+    rows.push({ type: 'header', category: cat, totalHrs, totalFee })
+    for (const item of group) {
+      rows.push({ type: 'item', item, rowIndex })
+      rowIndex += 1
+    }
+  }
+  return rows
+}
+
 // ---------------------------------------------------------------------------
 // Left panel — scope library browser
 // ---------------------------------------------------------------------------
@@ -524,6 +550,8 @@ export default function FeeLineItems({ feeId, feeMethod, isExecuted, onTotalChan
     [items],
   )
 
+  const groupedRows = useMemo(() => buildGroupedRows(items), [items])
+
   if (!isScopeBased) return null
 
   const cols = isExecuted ? 11 : 12
@@ -580,19 +608,40 @@ export default function FeeLineItems({ feeId, feeMethod, isExecuted, onTotalChan
               )}
 
               {!loading &&
-                items.map((item, idx) => (
-                  <LineRow
-                    key={item.line_item_id}
-                    item={item}
-                    index={idx}
-                    readOnly={isExecuted}
-                    showDelete={!isExecuted}
-                    durations={durations}
-                    onUpdate={updateField}
-                    onUpdateFields={updateFields}
-                    onDelete={deleteItem}
-                  />
-                ))}
+                groupedRows.map((row) => {
+                  if (row.type === 'header') {
+                    return (
+                      <tr key={`header-${row.category}`} className="bg-[#1E3D2F] select-none">
+                        <td colSpan={6} className="px-3 py-2 text-white text-xs font-semibold uppercase tracking-wide">
+                          {catLabel(row.category)}
+                        </td>
+                        <td className="px-2 py-2 text-right text-white text-xs font-semibold">
+                          {row.totalHrs.toFixed(1)} hrs
+                        </td>
+                        <td className="px-2 py-2" />
+                        <td className="px-2 py-2" />
+                        <td className="px-2 py-2 text-right text-white text-xs font-semibold">
+                          ${row.totalFee.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </td>
+                        <td className="px-2 py-2" />
+                        {!isExecuted && <td className="px-2 py-2" />}
+                      </tr>
+                    )
+                  }
+                  return (
+                    <LineRow
+                      key={row.item.line_item_id}
+                      item={row.item}
+                      index={row.rowIndex}
+                      readOnly={isExecuted}
+                      showDelete={!isExecuted}
+                      durations={durations}
+                      onUpdate={updateField}
+                      onUpdateFields={updateFields}
+                      onDelete={deleteItem}
+                    />
+                  )
+                })}
 
               {!loading && !isExecuted && (
                 <BlankRow totalCols={cols} onAdd={addCustom} resetKey={blankKey} busy={busy} />
