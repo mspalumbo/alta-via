@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import Modal from '../ui/Modal'
 import FeeLineItems from './FeeLineItems'
+import ExhibitA from './ExhibitA'
 
 const STATUS_STYLES = {
   'Draft':        'bg-gray-100 text-[#6B7280]',
@@ -143,6 +144,8 @@ export default function FeeDetail() {
   const [actionError, setActionError] = useState(null)
   const [actionWorking, setActionWorking] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
+  const [showExhibitA, setShowExhibitA] = useState(false)
+  const [exhibitItems, setExhibitItems] = useState([])
 
   useEffect(() => {
     fetchFee()
@@ -242,6 +245,16 @@ export default function FeeDetail() {
     setActionWorking(false)
   }
 
+  const handleExhibitA = async () => {
+    const { data } = await supabase
+      .from('fee_line_items')
+      .select('*, scope_library(*)')
+      .eq('fee_id', fee.fee_id)
+      .order('sort_order')
+    setExhibitItems(data || [])
+    setShowExhibitA(true)
+  }
+
   if (loading) {
     return <div className="text-sm text-[#6B7280]">Loading...</div>
   }
@@ -308,15 +321,23 @@ export default function FeeDetail() {
           )}
         </div>
 
-        {/* Edit button — non-Executed only */}
-        {!isExecuted && (
+        {/* Header actions */}
+        <div className="flex items-center gap-2 self-start">
           <button
-            onClick={() => setShowEditModal(true)}
-            className="text-sm border border-[#E5E7EB] px-4 py-2 rounded text-[#1A1A2E] hover:bg-[#F8F9FA] self-start"
+            onClick={handleExhibitA}
+            className="border border-[#1E3D2F] text-[#1E3D2F] px-3 py-1.5 rounded text-sm hover:bg-[#1E3D2F] hover:text-white transition-colors"
           >
-            Edit
+            Print Exhibit A
           </button>
-        )}
+          {!isExecuted && (
+            <button
+              onClick={() => setShowEditModal(true)}
+              className="text-sm border border-[#E5E7EB] px-4 py-2 rounded text-[#1A1A2E] hover:bg-[#F8F9FA]"
+            >
+              Edit
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Action error */}
@@ -458,6 +479,14 @@ export default function FeeDetail() {
             onCancel={() => setShowEditModal(false)}
           />
         </Modal>
+      )}
+
+      {showExhibitA && (
+        <ExhibitA
+          fee={fee}
+          lineItems={exhibitItems}
+          onClose={() => setShowExhibitA(false)}
+        />
       )}
     </div>
   )
