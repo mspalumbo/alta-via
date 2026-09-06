@@ -27,7 +27,14 @@ function formatCurrency(n) {
 function formatUnit(u) {
   if (u === 'per-week') return 'Per Week'
   if (u === 'per-month') return 'Per Month'
-  return 'Total'
+  if (u === 'each') return 'Each'
+  if (u === 'lump-sum') return 'Lump Sum'
+  // legacy values
+  if (u === 'wks') return 'Per Week'
+  if (u === 'mon') return 'Per Month'
+  if (u === 'ea') return 'Each'
+  if (u === 'ls') return 'Lump Sum'
+  return 'Lump Sum'
 }
 
 function getPhase(item) {

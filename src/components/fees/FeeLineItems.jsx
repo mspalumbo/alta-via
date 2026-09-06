@@ -5,7 +5,8 @@ const PARTICIPATION = ['High', 'Medium', 'Low']
 const UNIT_OPTIONS = [
   { value: 'per-week', label: 'Per Week' },
   { value: 'per-month', label: 'Per Month' },
-  { value: 'total', label: 'Total' },
+  { value: 'each', label: 'Each' },
+  { value: 'lump-sum', label: 'Lump Sum' },
 ]
 const ROLES = ['PM', 'Contracts', 'CM', 'Scheduling', 'Sustainability', 'Custom']
 
@@ -41,13 +42,15 @@ function fmtNum(v) {
 // Preconstruction categories are A–E; Construction is F–I.
 const PRECON_CATEGORIES = CATEGORY_ORDER.slice(0, 5)
 
-// Map legacy scope_unit_enum values ('ls','ea','wks','mon','hr') onto the
-// current per-week / per-month / total set so pre-existing rows render
-// correctly without a data migration.
+// Map unit values (current set plus legacy scope_unit_enum 'ls'/'ea'/'wks'/'mon'/'hr')
+// onto the current per-week / per-month / each / lump-sum set so pre-existing rows
+// render correctly without a data migration.
 function normalizeUnit(u) {
   if (u === 'per-week' || u === 'wks') return 'per-week'
   if (u === 'per-month' || u === 'mon') return 'per-month'
-  return 'total'
+  if (u === 'each' || u === 'ea' || u === 'hr') return 'each'
+  if (u === 'lump-sum' || u === 'ls') return 'lump-sum'
+  return 'lump-sum'
 }
 
 // Phase a line item belongs to: explicit scope_library.phase, else inferred
@@ -185,7 +188,8 @@ function LineRow({ item, index, readOnly, showDelete, durations, onUpdate, onUpd
   const normUnit = normalizeUnit(item.unit)
   const autoQty = computeAutoQty(normUnit, itemPhase(item), durations)
   // Auto mode = per-week / per-month unit with a phase duration set (autoQty non-null).
-  const isAutoMode = autoQty != null
+  // 'each' and 'lump-sum' are always manual — no auto-calc, no override flag.
+  const isAutoMode = (normUnit === 'per-week' || normUnit === 'per-month') && autoQty !== null
   const isOverridden = item.qty_override ?? false
 
   // In auto mode the field shows autoQty until the user overrides it; an override
@@ -499,7 +503,7 @@ export default function FeeLineItems({ feeId, feeMethod, isExecuted, onTotalChan
         scope_item_id: null,
         custom_description: text,
         participation_level: 'Medium',
-        unit: 'total',
+        unit: 'lump-sum',
         quantity: 1,
         hours_per_unit: 0,
         role: 'PM',
