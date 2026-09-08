@@ -9,31 +9,41 @@
 
 ## 1. PRODUCT OVERVIEW
 
-**Cortina** is a Professional Services Automation (PSA) platform purpose-built for
-owner's representative firms in the construction industry. It is the internal operational
-backbone of Palumbo Management Group (PMG) — tracking every project from earliest
-pursuit through final invoice and collections.
+**Cortina** is a Professional Services Management Platform (PSMP) — a single connected
+system built specifically for boutique consulting firms that bill by the hour, manage by
+the project, and grow by the person. It is the internal operational backbone for professional
+services firms, tracking every engagement from earliest pursuit through final invoice and
+collections.
 
 Cortina is a companion product to Vetta (external-facing project management) and
-will eventually be sold alongside Vetta as part of a suite of tools for owner's rep firms.
-It is built internal-first, universal by design.
+is sold alongside Vetta as part of a suite of tools for owner's rep and consulting firms.
+It is built as a universal commercial product — not for any specific firm.
+
+**CRITICAL ARCHITECTURAL PRINCIPLE:**
+Cortina must never reference any specific firm by name in code, UI, or data. All
+firm-specific information (name, logo, address, branding, rates, codes) lives in
+firm_settings and flows from there. The first firm to use Cortina is simply the first
+customer — the product is built for any professional services consulting firm. This
+is the same philosophy as Vetta. Enforce this in every component and every session
+without exception.
 
 **The core problem it solves:**
-Owner's rep firms manage projects, fees, people, time, and billing across fragmented
-tools — spreadsheets, QuickBooks, generic PSA platforms — none of which are built
-for this specific business model. Cortina replaces all of them with one integrated platform.
+Owner's rep and consulting firms manage projects, fees, people, time, and billing across
+fragmented tools — spreadsheets, QuickBooks, generic PSA platforms — none of which are
+built for this specific business model. Cortina replaces all of them with one integrated platform.
 
 **Product family:**
 - Collina — household budget app (separate repo)
 - Vetta — client-facing project management (separate repo)
-- Cortina — internal practice management (this repo)
+- Cortina — internal practice management / PSMP (this repo)
+- Alta•Via — institutional knowledge platform, AI-powered (future, separate product)
 - Archivio — qualifications & BD database (future, concept only)
 
 **The suite sales motion:**
 Vetta is sold first (project management). Cortina is the natural second conversation
-(how are you managing time, billing, and firm performance?). Archivio is the third
-(how is your marketing team handling pursuits and SOQs?). Each product stands alone
-but they share project and client data as a connected ecosystem.
+(how are you managing time, billing, and firm performance?). Alta•Via is the third
+(institutional knowledge, lessons learned, SOPs). Each product stands alone but they
+share project and client data as a connected ecosystem.
 
 ---
 
@@ -141,14 +151,40 @@ Orange must NOT appear in:
 - Main content area to the right — white/near-white background
 - Top bar: breadcrumb + user menu + notifications
 
-**Sidebar navigation items (Phase 1):**
-- Dashboard (home)
-- Clients
-- Projects
-- Fee Development
-- Rate Cards
-- Timesheets
-- Invoicing & AR
+**Sidebar navigation — collapsible sections:**
+
+CRM (section header):
+- Clients & Contacts → /clients (BUILT)
+- BD & Pursuits → /bd (Coming Soon)
+
+Projects (section header):
+- Contract → /contracts (Coming Soon)
+- Fee Development → /fees (BUILT)
+- Billing → /billing (Coming Soon)
+- Accounts Receivable → /ar (Coming Soon)
+
+Employee (section header):
+- Timecards → /timesheets (Coming Soon)
+- PTO Management → /pto (Coming Soon)
+- Expense Reports → /expenses (Coming Soon)
+- Utilization Projection → /utilization (Coming Soon)
+- CV / Talent Profile → /cv (Coming Soon)
+- Performance Evaluations → /performance (Coming Soon)
+
+Management (section header):
+- Rate Builder → /rate-builder (Coming Soon)
+- Employee Management → /employee-management (Coming Soon)
+- Profit & Margins → /profit (Coming Soon)
+- Staff Utilization → /staff-utilization (Coming Soon)
+- Project Financials → /project-financials (Coming Soon)
+- Firm Expenses → /firm-expenses (Coming Soon)
+- EBITDA Dashboard → /ebitda (Coming Soon)
+- Management Visibility → /management (Coming Soon)
+
+Section headers are collapsible. All sections default to collapsed on load.
+Built modules use NavLink with active styling.
+Coming Soon modules are non-interactive with text-white/30 cursor-not-allowed.
+Module items have pl-5 indent and bg-white/8 background (lighter than sidebar).
 
 **Touch-first for timesheet module:**
 - Timesheet entry is the primary iPad use case
@@ -278,22 +314,63 @@ Supabase RLS policies required on all sensitive tables from Session 1.
 
 ## 5. BUILD PHASES
 
-### Phase 1 — Core (Current Focus)
-Build in this exact sequence — each module depends on the previous:
-1. Client Records
-2. Projects
-3. Fee Development
-4. Rate Cards
-5. Timesheets
-6. Invoicing & AR
+### Module Architecture — Four Sections
 
-### Phase 2 — Intelligence Layer (Future)
+**CRM:**
+- C1 — Clients & Contacts
+- C2 — BD / Pursuits
+
+**Projects:**
+- P1 — Contract (includes change orders, add services)
+- P2 — Fee Development (scope-based, hours-based, target fee, Exhibit A)
+- P3 — Billing / Invoicing
+- P4 — Accounts Receivable
+
+**Employee:**
+- E1 — Timecards
+- E2 — PTO Management (requests, accrual tracking, manager approval)
+- E3 — Expense Reports (hard attachment requirement, attendee list for meals)
+- E4 — Utilization Projection (own view only)
+- E5 — CV / Talent Profile (auto-populated from completed projects, resume generator)
+- E6 — Performance Evaluations (TBD — process not yet defined)
+
+**Management:**
+- M1 — Rate Builder (title stacks, burden calculation, health check dashboard)
+- M2 — Employee Management (compensation, benefits, PTO tiers, published rates)
+- M3 — Profit & Margins (per-employee health check, actual vs modeled)
+- M4 — Staff Utilization Projection (firm-wide grid, allocation management)
+- M5 — Project Financials (firm-level dashboard, drillable to project)
+- M6 — Firm Expenses (overhead: rent, software, insurance — separate from E3)
+- M7 — EBITDA Dashboard (terminal reporting layer)
+- M8 — Management Visibility / Unified Approval Queue
+
+**External:**
+- Xero — bidirectional accounting integration (future v2)
+
+**Future standalone product:**
+- Alta•Via — institutional knowledge platform (lessons learned, SOPs, contract mods, AI-powered)
+
+### Access Tiers
+
+**Employee** — Employee section only
+**Manager** — Employee + CRM + Projects (sees all employees in firm grid, edits direct reports only)
+**Principal** — Full access including Management section
+
+Direct reports configured via manager_id on users table.
+Determines approval routing for timesheets, expenses, PTO, staffing allocations.
+
+### Build Sequence
+
+**Phase 1 — Core (Sessions 1-5, current):**
+Client Records → Projects → Fee Development → Rate Cards → Timesheets → Invoicing & AR
+
+**Phase 2 — Intelligence Layer (next):**
 Financial Projections, Staffing & Utilization, Expense Reports
 
-### Phase 3 — Front End (Future)
-Full CRM & Pipeline, Rate Development Tool
+**Phase 3 — Front End:**
+Full CRM & Pipeline, Rate Development Tool (M1)
 
-### Phase 4 — Infrastructure (Future)
+**Phase 4 — Infrastructure:**
 User Roles & Permissions full UI, Reporting & Dashboard
 
 ---
@@ -557,6 +634,64 @@ tf_margin_at_target     decimal(5,2)   -- system calculated %
 
 UI shows: given this fee, this team, this duration — here is what PMG can deliver,
 what the margin is, and whether it is viable.
+
+---
+
+#### BLENDED RATE CALCULATOR (Future — requires P1 Contract and M1 Rate Builder)
+
+Each project can have a blended rate calculated from team composition.
+Located in the fee/project header — "Blended Rate" button opens a panel.
+
+Data flow:
+M1 Rate Builder → firm-wide standard rates by role
+P1 Contract → project-level rate modifications (negotiated rates, overrides)
+P2 Fee Development → blended rate calculator uses contract rates as inputs
+
+Calculation: Σ(Role Rate × Role Hours/Week) ÷ Σ(Total Hours/Week) = Blended Rate
+Example: Sr. PM $200/hr × 5hrs + PM $170/hr × 30hrs = $6,100 ÷ 35hrs = $174.29/hr
+
+Stored on fee_records. "Blended" option available in Role dropdown on line items.
+Build after P1 Contract and M1 Rate Builder exist.
+
+---
+
+#### DURATION INPUTS (Built — Session 5b)
+
+Two duration fields on fee_records (already migrated):
+- preconstruction_duration (decimal) + preconstruction_duration_unit (Weeks/Months)
+- construction_duration (decimal) + construction_duration_unit (Weeks/Months)
+
+Live in the Fee Summary card, above the line items section.
+Scope-Based fees only. Read-only when fee is Executed.
+
+---
+
+#### UNIT OPTIONS (Built — Session 5b)
+
+Four options replacing original ls/ea/wks/mon/hr enum:
+- per-week: auto-calculates qty from phase duration, Math.ceil for weeks
+- per-month: auto-calculates qty from phase duration
+- each: manual qty entry, no duration math
+- lump-sum: defaults qty to 1, manual override allowed
+
+qty_override boolean on fee_line_items:
+- false: qty shows auto-calculated value (blue field background)
+- true: qty shows manual override (amber field background, reset button)
+- Reset: clears override, restores auto-calculated value
+- Changing unit dropdown clears override flag
+
+---
+
+#### EXHIBIT A EXPORT (Built — Session 5b)
+
+"Print Exhibit A" button on FeeDetail — all fee methods, all statuses.
+Opens new browser tab with standalone HTML document.
+
+Shows: scope items by category, hours per item, phase subtotals (fee only)
+Hides: per-line rates, per-line dollar totals
+Font: Arial. Portrait orientation. Fixed column widths via colgroup.
+
+Future: firm logo auto-populates from firm_settings when that infrastructure exists.
 
 ---
 
@@ -1134,25 +1269,135 @@ clear status tracking, no workarounds that would complicate export later).
 
 ---
 
-## 7. PHASE 2 — INTELLIGENCE LAYER (Future Spec)
+## 7. MODULE SPECS — PHASE 2
 
-To be fully specced in Cortina Workshop before build begins.
+---
 
-**Financial Projections**
-Firm-level revenue view combining all active project re-forecasts.
-Actual vs projected at firm level. Cash flow forward view.
-Add services warning dashboard across all projects simultaneously.
+### 7.1 FINANCIAL PROJECTIONS (M5)
 
-**Staffing & Utilization**
-Firm-wide capacity view: stack all project staffing curves.
-Every employee, every project, every month — demand vs capacity.
-Light/heavy staffing signal. Feeds hiring and BD decisions.
-Individual utilization metrics feed into Rate Development Tool (Phase 3).
+**Purpose:** Firm-level dashboard aggregating all active project projections.
+Primarily a consumption and analysis layer on Phase 1 data.
 
-**Expense Reports**
-Employee expense submission, approval workflow, billable vs overhead coding.
-Billable expenses flow to project invoicing alongside timesheet-based line items.
-Overhead expenses tracked as firm operating costs.
+**Firm-Level Revenue Dashboard:**
+- Total projected billing by month across all active projects
+- Total actual billing by month from approved invoices
+- Variance: projected vs actual, by month and cumulative
+- Forward view: next 3, 6, 12 months projected revenue
+- Add services warnings across all projects in one consolidated view
+- Lump sum health: all fixed-fee projects, cumulative delta, trending favorable or at risk
+- Drillable to individual project detail
+
+**Cross-Validation Alert:**
+When financial projection and staffing projection diverge beyond configurable threshold — flag for PM review. Forces conscious reconciliation.
+
+**Phase 1 additions required before Phase 2 build:**
+- Add service workflow (add_services table — already in schema)
+- Lump sum tracking: lump_sum_billed, hours_value, lump_sum_delta, cumulative_lump_sum_delta on projection_monthly_detail
+
+---
+
+### 7.2 STAFFING & UTILIZATION (M4)
+
+**Purpose:** Employee-level utilization planning and tracking. First place employee-specific projections are built.
+
+**staffing_allocations table (new in Phase 2):**
+```sql
+allocation_id       uuid PK default gen_random_uuid()
+project_id          uuid FK → projects NOT NULL
+user_id             uuid FK → auth.users NOT NULL
+month               date NOT NULL
+projected_hours     decimal(10,2)
+status              enum('Draft','Pending-Approval','Approved') default 'Draft'
+submitted_by        uuid FK → auth.users
+submitted_at        timestamptz
+approved_by         uuid FK → auth.users
+approved_at         timestamptz
+return_notes        text
+created_at          timestamptz default now()
+updated_at          timestamptz default now()
+UNIQUE(project_id, user_id, month)
+```
+
+**Firm Grid (main view):**
+- Rows = employees, Columns = rolling months, Cells = total utilization %
+- Future months: Green ≥ target, Red < target, Gray = no projection
+- Past months: Blue ≥ projection, Amber < projection
+- Past months pending close: muted color with pending indicator dot
+- Current month: progress indicator
+- Far right: annual utilization % total
+
+**Cell colors:**
+- Future, at/above target: #10B981 (green)
+- Future, below target: #EF4444 (red)
+- Future, no projection: #E5E7EB (gray)
+- Past, actual ≥ projected: #3B82F6 (blue)
+- Past, actual < projected: #F59E0B (amber)
+- Past pending close: muted with indicator dot
+
+**Employee Detail View (click any row):**
+- Rows = projects, Columns = months, Cells = projected hours
+- Same color logic, past month hover shows "Projected: X | Actual: Y | Variance: Z"
+- Data entry here — click cell, enter hours
+- Blank bottom row to add new project allocation
+
+**Approval Workflow:**
+- Employee edits own projection → Draft, manager notified
+- Manager approves → finalized, firm grid updates
+- Manager edits direct report → immediately finalized, employee notified
+- Manager login shows pending approval queue
+
+**Access:**
+- Principal: full firm grid, edit anyone
+- Managers: full firm grid visible (to identify capacity for staffing), edit direct reports only
+- Employees: own detail view only
+
+**FTE Planning:**
+Stack all project staffing projections to show total demand vs capacity.
+Over/under capacity signal by month. FTE gap calculation.
+
+---
+
+### 7.3 EXPENSE REPORTS (E3)
+
+**Purpose:** Employee expense submission, approval, reimbursement, billable expense flow to invoicing.
+
+**Workflow:** Ad hoc submission (not weekly cycle) → Stage 1 manager review → Stage 2 Principal approval → reimbursement tracking / billable expenses to invoicing
+
+**expense_reports table:** report_id, user_id, report_name, report_period_start/end, status, total_amount, reimbursable_amount, approval chain timestamps
+
+**expense_line_items table:** line_item_id, report_id, expense_date, description, vendor, amount, code_id, is_billable (from code), payment_method (Company-Card/Personal-Card), attachment_url (REQUIRED), attachment_type (Receipt/Mileage-Log), mileage_miles, requires_attendees, attendees (jsonb)
+
+**HARD RULES:**
+1. Every line item requires an attachment before submission — hard block, not a warning
+2. Meal/entertainment codes require attendee list — hard block
+   - Minimum one attendee beyond submitter
+   - External attendees require company name
+   - Attendee list flows to invoice if billable
+
+**Non-billable overhead codes:**
+TRAVEL-AIR, TRAVEL-HOTEL, TRAVEL-CAR, MEALS-CLIENT (requires_attendees), MEALS-TEAM (requires_attendees), OFFICE, TRAINING, OTHER
+
+**Post-approval:**
+- Personal card items → reimbursement records, outstanding reimbursements dashboard
+- Billable items → queue for next project invoice, shown as separate line items
+- Company card → tracked for cost accounting, no reimbursement
+
+---
+
+### 7.4 UNIFIED APPROVAL QUEUE (M8)
+
+A first-class feature surfaced in Phase 1 (timesheets, invoices) and expanded in Phase 2.
+
+**Queue items:**
+- Timesheets pending approval
+- Expense reports pending (Stage 1 from direct reports, Stage 2 for Principal)
+- Staffing allocation changes pending
+- Invoice Stage 1 reviews (project managers)
+- Invoice Stage 2 reviews (Principal)
+- Add service requests (Principal)
+- PTO requests (managers)
+
+**Display:** Badge on top bar (count) + dedicated queue view. Sorted by days pending — oldest first. One-click approve or return with notes.
 
 ---
 
@@ -1442,226 +1687,114 @@ of the task before beginning."
 
 ---
 
-## 16. BUILD LOG
+## 16. MIGRATIONS COMPLETED
+
+All migrations have been run in Supabase. Do not re-run.
+
+**001_schema.sql** — Complete database schema: 21 tables, enums, triggers, indexes
+**002_rls.sql** — Row Level Security policies for all tables
+**003_seed.sql** — firm_settings, 6 non-billable billing codes, 123 scope_library items (placeholder)
+**004_grants.sql** — Explicit GRANT statements (required for Supabase projects after May 30, 2026)
+**005_scope_library_real_data.sql** — 123 real Attachment A scope items loaded (replaced placeholders)
+
+**Additional schema changes applied directly:**
+- scope_unit_enum extended: added per-week, per-month, total, each, lump-sum
+- fee_records: added preconstruction_duration, preconstruction_duration_unit, construction_duration, construction_duration_unit
+- fee_line_items: added qty_override boolean default false
+- staffing_projections: added projection_type, add_service_id, superseded_at, superseded_by, notes
+- projection_monthly_detail: added lump_sum_billed, hours_value, lump_sum_delta, cumulative_lump_sum_delta
+- projects: added reporting_month date (from Vetta lessons learned)
+- users: added manager_id uuid FK → users
+- add_services table created
+- invoice_line_items: added line_type (Timesheet/Expense)
+
+**Next migration needed before Phase 2 build:**
+- staffing_allocations table (see Phase 2 spec Section 7.2)
+
+---
+
+## 17. BUILD LOG
 
 ### Session 1 — 2026-05-20
 **Objective:** Supabase schema + project scaffold
-**What was built:**
-- Complete database schema: 25 enum types, 21 tables in FK-dependency order, 10 triggers/functions, and performance indexes (`001_schema.sql`)
-- Full RLS policies: all 21 tables enabled, 5 SECURITY DEFINER helper functions (`is_principal`, `is_pm_or_above`, `is_admin_billing`, `is_assigned_to_project`, `get_my_role`), all role-scoped policies (`002_rls.sql`)
-- Seed data: 1 firm_settings record (PMG defaults), 6 non-billable billing codes, 123 scope_library placeholder rows keyed by correct phase/category/item_number/sort_order (`003_seed.sql`)
-- Supabase client: `src/lib/supabase.js`
-- Full `src/` directory structure: `/components/layout`, `/components/ui`, `/components/clients`, `/components/projects`, `/components/fees`, `/components/rates`, `/components/timesheets`, `/components/invoicing`, `/context`, `/hooks`, `/pages`
-
-**Key decisions made:**
-- Executed fee immutability: DB trigger allows ONLY the `Executed → Superseded` status transition after execution — all other field changes blocked. Application must supersede the old fee before executing the new one.
-- Single executed fee enforced by trigger (not just application logic): raises exception if a second `Executed` fee would exist on the same project simultaneously.
-- `is_billable` on `timesheet_entries` is overwritten by a BEFORE INSERT/UPDATE trigger from the billing code — employee input is structurally impossible to override.
-- Baseline projection `projected_hours`/`projected_amount` locked by trigger; only `reforecast_hours`/`reforecast_amount` columns update post-baseline.
-- `scope_role_enum` (PM/Contracts/CM/Scheduling/Sustainability/Custom) used for scope library and fee line items; `rate_role_enum` (broader set including Principal/Admin etc.) used for rate cards and projections.
-- `internal_cost_rate` column visibility enforced at RLS level: non-Principals can only select their own person-specific rate or role-based rates; application layer must additionally exclude the column from API responses for non-Principals.
-- `fee_line_items.total_hours` and `line_total` are GENERATED ALWAYS AS STORED computed columns — no application logic required to maintain them.
-- Project billing code auto-created by trigger when project status transitions to `Active`.
-
-**Files created/modified:**
-- `supabase/migrations/001_schema.sql` — enums, tables, triggers, indexes (718 lines)
-- `supabase/migrations/002_rls.sql` — RLS enable + helper functions + all policies (595 lines)
-- `supabase/migrations/003_seed.sql` — firm_settings, billing codes, scope_library stubs (203 lines)
-- `src/lib/supabase.js` — Supabase client initialization
-- `src/` directory tree — all 11 subdirectories per spec
-
+**What was built:** Complete database schema (21 tables, RLS, seed data), src/lib/supabase.js, directory structure
 **Supabase Project ID:** ozkrhngpccwlzjsxezyu
-**Supabase Project URL:** https://ozkrhngpccwlzjsxezyu.supabase.co
-**GitHub Repo URL:** [Update when repo is pushed to GitHub]
+**GitHub Repo:** https://github.com/mspalumbo/cortina
 
-**Verification confirmed:**
-- All 21 tables present in Supabase
-- firm_settings: 1 row ✓
-- billing_codes: 6 rows ✓
-- scope_library: 123 rows ✓
+### Session 2 — Client Records module
+**What was built:** Client list page, client detail page, inline contact management, wired to Supabase
 
-**Outstanding before Session 2:**
-- Populate scope_library with actual Attachment A data (replace placeholder `activity_name` and `standard_description` values)
-- Update `firm_settings` record with actual PMG address, phone, email, and payment instructions
-- Push repo to GitHub and update GitHub Repo URL above
+### Session 3 — Projects module
+**What was built:** Project list, project detail, team assignments, project status workflow
 
-**Where we left off:** All 21 tables live in Supabase with RLS enabled. Schema is the authoritative data layer for all Phase 1 modules. No UI has been built.
-**Next session:** Session 2 — Client Records UI (client list, client detail, contacts inline)
+### Session 4 — Rate Cards module
+**What was built:** Rate card list, add/edit rates, effective date history, role-based rates
 
----
+### Session 5a — Fee Development foundation
+**What was built:** Fee list (project-grouped accordion), fee detail, fee status workflow, fee create modal
 
-### Session 2 — 2026-05-21
-**Objective:** Phase 1 schema additions migration + Client Records UI
-
+### Session 5b — Fee Line Items (Scope-Based)
 **What was built:**
-- Ran Section 15 migration: lump sum columns on `projection_monthly_detail`, `projection_type`/add_service fields on `staffing_projections`, `manager_id` on `users`, `add_services` table, `line_type` on `invoice_line_items`
-- Updated `firm_settings`: removed PMG-specific data, now uses generic placeholder values
-- Fixed Tailwind v4 PostCSS config (`@tailwindcss/postcss` package)
-- `FirmContext` and `AuthContext` — loads `firm_settings` from Supabase on mount
-- Layout shell: `Sidebar`, `TopBar`, `PageWrapper` — responsive, navy sidebar, orange active indicator, firm name from `FirmContext`
-- `App.jsx` — react-router-dom routing, all placeholder pages
-- Client Records module: `ClientsPage`, `ClientList`, `ClientDetail`, `ClientForm`, `ContactList`, `ContactForm`
-- `Modal` UI primitive
+- Scope-based line item builder (two-panel layout: library browser + grid)
+- Duration inputs (Preconstruction + Construction) in Fee Summary card
+- Smart unit selector: Per Week, Per Month, Each, Lump Sum
+- Qty auto-calculate from duration with override flag (qty_override)
+- Category grouping with subtotals in dark green header rows
+- Exhibit A export (new browser tab, professional print document)
+- Sidebar rebuilt: collapsible CRM/Projects/Employee/Management sections
+- Scope library: 123 real Attachment A items loaded
 
-**Key decisions made:**
-- Anon RLS policies added temporarily for `clients` and `client_contacts` tables for testing — must be replaced with authenticated policies when auth is implemented
-- `firm_settings` requires a public read RLS policy — added
-- Tailwind v4 requires `@tailwindcss/postcss` instead of `tailwindcss` directly in `postcss.config.js`
-- `index.css` uses `@import "tailwindcss"` instead of `@tailwind` directives
-
-**Files created/modified:**
-- `postcss.config.js` — updated for Tailwind v4
-- `src/index.css` — updated for Tailwind v4
-- `src/main.jsx` — updated
-- `src/App.jsx` — react-router-dom routing, all placeholder pages
-- `src/context/FirmContext.jsx`
-- `src/context/AuthContext.jsx`
-- `src/components/layout/Sidebar.jsx`
-- `src/components/layout/TopBar.jsx`
-- `src/components/layout/PageWrapper.jsx`
-- `src/components/ui/Modal.jsx`
-- `src/pages/ClientsPage.jsx`
-- `src/pages/ClientDetailPage.jsx`
-- `src/components/clients/ClientList.jsx`
-- `src/components/clients/ClientDetail.jsx`
-- `src/components/clients/ClientForm.jsx`
-- `src/components/clients/ContactList.jsx`
-- `src/components/clients/ContactForm.jsx`
-
-**Verification confirmed:**
-- Client list loads from Supabase
-- Add client saves and appears in list
-- Client detail loads correct client
-- Edit client updates correctly
-- Add contact saves and appears in contact list
-- Soft delete (deactivate) works correctly
-- Firm name loads from `firm_settings` — not hardcoded
-
-**Where we left off:** Client Records module fully complete and committed.
-**Next session:** Session 3 — Projects module
+### Session 5c — Next
+**Objective:** Discounts module in Fee Development
 
 ---
 
-### Session 3 — 2026-05-26
-**Objective:** Projects module — list, form, detail with team assignments
+## 18. LESSONS LEARNED FROM VETTA BUILD
 
-**What was built:**
-- `ProjectsPage.jsx` — page wrapper
-- `ProjectList.jsx` — searchable (name + number) and filterable (status, type) table with color-coded status badges; Add Project button opens modal
-- `ProjectForm.jsx` — add/edit mode; add mode reads fresh `firm_settings` at save time to generate project number (PREFIX-YYYY-### or PREFIX-### based on `project_number_include_year`) then increments `project_number_next_seq`; all form fields from spec
-- `ProjectDetailPage.jsx` — page wrapper
-- `ProjectDetail.jsx` — four info sections (Overview, Timeline, Financial, Contract); clickable client name links to `/clients/:id`; Team Assignments section with add (modal) and remove (soft-delete `is_active = false`); placeholder sections for Fee Development and Invoices
-- `AddMemberForm` (inline in ProjectDetail) — user dropdown from `public.users`, role on project text, start/end dates
-- `App.jsx` — added `/projects` and `/projects/:id` routes; removed stale Projects placeholder function
+Apply these proactively — do not wait to rediscover them.
 
-**Key decisions made:**
-- Project number generated at insert time from a fresh `firm_settings` fetch (not from FirmContext cache) — avoids stale sequence if multiple projects are added in the same session
-- `AddMemberForm` lives inside `ProjectDetail.jsx` (not a separate file) — it's project-scoped and has no reuse case
-- Team assignment remove is soft-delete (`is_active = false`) per spec's "soft delete only" rule
-- `public.users` fetch for team assignment dropdown will return empty until Supabase Auth users + `public.users` rows are populated — handled gracefully with a helper message
+### L1 — Hash-Based URL Routing (build from day one)
+Implement hash-based URL routing from Session 2 forward.
+Write navigation state to window.location.hash on every nav change.
+On mount, useEffect reads hash and restores state.
+toSlug(): name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+writeHash() must be called after every setActiveNav() call.
+Mount restore effect must only gate on sessionLoaded — NOT projectLoaded (deadlock risk).
 
-**Files created/modified:**
-- `src/pages/ProjectsPage.jsx` — new
-- `src/pages/ProjectDetailPage.jsx` — new
-- `src/components/projects/ProjectList.jsx` — new
-- `src/components/projects/ProjectForm.jsx` — new
-- `src/components/projects/ProjectDetail.jsx` — new (includes AddMemberForm)
-- `src/App.jsx` — updated routes
+### L2 — recharts v2.12.7 Fatal Bar Chart Bug
+recharts crashes with "minPointSize is not a function" on any Bar component.
+Build ALL bar charts as pure SVG. This is not a hack — it gives full control.
 
-**Verification confirmed:**
-- `npm run build` — 0 errors, 84 modules, clean production build
-- Committed and pushed: `cd8b2c7` — "Session 3: Projects module"
+### L3 — Shared Utility Functions
+When a calculation is needed in more than one module, extract immediately to src/utils/.
+Never duplicate calculation logic. Examples: src/utils/utilization.js, src/utils/reforecast.js
 
-**Where we left off:** Projects module fully complete and committed. All six files build clean.
-**Next session:** Session 4 — Rate Cards module (built this session)
+### L4 — Inline Editing with Auto-Save
+Use defaultValue (uncontrolled) for text/date/number inputs — saves on blur.
+Use value (controlled) for dropdowns — reflects optimistic updates immediately.
+Optimistic updates: update local state immediately, save to Supabase, revert on error.
+150ms blur delay on typeahead so onMouseDown fires before input closes.
 
----
+### L5 — Print Stylesheets
+Every structural element that might be shown/hidden in print must have a className.
+@page rule must be outside @media print block.
 
-### Session 4 — 2026-05-26
-**Objective:** Rate Cards module — two-section list, insert-only form, End Rate soft-deactivation
+### L6 — Reporting Month as Project-Level Setting (CRITICAL)
+Never use new Date() as current month in any financial calculation.
+Always use a user-controlled reporting_month stored on the project record.
+reporting_month column on projects table (date, YYYY-MM-01).
+ReportingMonthSelector component in every module header.
 
-**What was built:**
-- `RateCardsPage.jsx` — page wrapper
-- `RateCardList.jsx` — single fetch splits into Role-Based and Person-Specific sections client-side; reusable `RateSection` sub-component (not exported); per-section inactive toggle shows/hides ended rates; "End Rate" sets `end_date = today` and `is_active = false` (no confirm — consistent with deactivate pattern from ContactList); `internal_cost_rate` column always shows "—" (role-gated in Phase 4); Person-Specific section shows user name from `users` join or truncated UUID if no user row
-- `RateCardForm.jsx` — insert-only (no update path); rate_type radio (Role-Based / Person-Specific); Person-Specific shows user UUID text input with Phase 4 note; amber info banner reinforces immutability; `effective_date` defaults to today; `internal_cost_rate` field present but optional
-- `App.jsx` — replaced `Rates` placeholder with `RateCardsPage`
+### L7 — RLS Recursion Risk
+If RLS policies on any table reference that same table, infinite recursion occurs silently.
+Fix: use simple user_id = auth.uid() policies.
 
-**Key decisions made:**
-- One fetch for all rates, split client-side by `rate_type` — simpler than two separate fetches, avoids duplicate loading states
-- `RateSection` lives inside `RateCardList.jsx` — it's not reused anywhere else and keeping it co-located avoids file proliferation
-- "End Rate" does NOT show a confirmation dialog — consistent with `handleDeactivate` pattern established in ContactList; the button label is explicit enough
-- Person-Specific `user_id` field is a raw UUID text input for now with a clear note; user picker deferred to Phase 4
-
-**Files created/modified:**
-- `src/pages/RateCardsPage.jsx` — new
-- `src/components/rates/RateCardList.jsx` — new
-- `src/components/rates/RateCardForm.jsx` — new
-- `src/App.jsx` — updated routes
-
-**Verification confirmed:**
-- `npm run build` — 0 errors, 87 modules, clean production build
-- Committed and pushed: `4bc6b30` — "Session 4: Rate Cards module"
-
-**Where we left off:** Rate Cards module fully complete and committed.
-**Next session:** Session 5a — Fee Development foundation
+### L8 — Supabase Steps Always Separate from Claude Code
+Never embed SQL inside a Claude Code prompt.
+Always give Supabase SQL steps in a separate clearly labeled block for manual execution.
 
 ---
 
-### Session 5a — 2026-05-26
-**Objective:** Fee Development foundation — fee records list, create fee, detail with status workflow
-
-**What was built:**
-- `FeesPage.jsx` — page wrapper for firm-wide fee list
-- `FeeDetailPage.jsx` — page wrapper for fee detail
-- `FeeList.jsx` — dual-mode component: firm-wide (all columns, project selector in Add Fee flow) and embedded/project-scoped (compact header, no project columns, direct Add Fee). `ProjectSelectorStep` sub-component lives inside the file (firm-wide Add Fee step 1 — pick a project). Embedded mode triggered by `projectId` prop.
-- `FeeForm.jsx` — insert-only; shows project context banner at top; status always defaults to Draft; method dropdown with all four options
-- `FeeDetail.jsx` — full header with project link (clickable → /projects/:id); status workflow action bar: Draft → "Submit for Review", Under-Review → "Execute Fee" + "Return to Draft", non-terminal → "Supersede"; Execute Fee checks for existing Executed fee on project and blocks with clear error if found; Edit modal for fee_name/notes only (hidden on Executed fees); green immutability notice on Executed fees; placeholder cards for Line Items (5b), Discounts (5c), Staffing Projection (5d); `EditFeeForm` sub-component lives inside the file
-- `ProjectDetail.jsx` — Fee Development placeholder replaced with `<FeeList projectId={id} projectName={project.project_name} />`
-- `App.jsx` — `/fees` and `/fees/:id` routes wired; `Fees` placeholder function removed
-
-**Key decisions made:**
-- `FeeList` is a single dual-mode component rather than two separate components — avoids duplicating table logic; `embedded` boolean derived from presence of `projectId` prop
-- `ProjectSelectorStep` and `EditFeeForm` are co-located inside their parent files — no standalone reuse case
-- Supersede is available for Draft and Under-Review only (not Executed per spec directive — "Executed requires executing a replacement first")
-- `isTerminal` flag covers both Executed and Superseded — neither shows the action bar
-
-**Files created/modified:**
-- `src/pages/FeesPage.jsx` — new
-- `src/pages/FeeDetailPage.jsx` — new
-- `src/components/fees/FeeList.jsx` — new
-- `src/components/fees/FeeForm.jsx` — new
-- `src/components/fees/FeeDetail.jsx` — new
-- `src/components/projects/ProjectDetail.jsx` — updated (Fee Development section)
-- `src/App.jsx` — updated routes
-
-**Verification confirmed:**
-- `npm run build` — 0 errors, 92 modules, clean production build
-- Committed and pushed: `d05edfa` — "Session 5a: Fee Development foundation"
-
-**Where we left off:** Fee records can be created, viewed, and moved through the status workflow. FeeDetail has placeholder sections for 5b/5c/5d.
-**Next session:** Session 5b — Fee Line Items (Scope-Based method builder)
-
----
-
-### Rename — 2026-08-29
-**Objective:** Product rename — Alta•Via → Cortina across the entire codebase.
-
-**What changed:**
-- `CLAUDE.md` — every "Alta•Via" → "Cortina", "ALTA•VIA" → "CORTINA" (20 + 2 occurrences), including "Alta•Via Workshop/Build" → "Cortina Workshop/Build". The lowercase `alta-via` in the Session 1 GitHub-repo and Supabase-project setup steps was left as-is (those name the actual repo and Supabase project, which are not being renamed).
-- `src/components/layout/Sidebar.jsx` — wordmark "ALTA•VIA" → "CORTINA" (desktop + mobile).
-- `src/components/layout/TopBar.jsx` — firm-name fallback `'Alta•Via'` → `'Cortina'`.
-- `package.json` — `name` field `alta-via` → `cortina`.
-- `index.html` — `<title>` `alta-via` → `Cortina`.
-- `supabase/migrations/001_schema.sql`, `002_rls.sql`, `003_seed.sql` — header comment "Alta•Via — Migration NNN" → "Cortina — Migration NNN".
-
-**Not changed (per directive):** folder path (`Documents/alta-via`), GitHub remote URL, Supabase project URL/credentials, all color values and design tokens, component/file names. `package-lock.json` still carries `"name": "alta-via"` — regenerates on next `npm install`.
-
-**Verification confirmed:**
-- `npm run build` — 0 errors, 92 modules, clean production build
-- Committed and pushed: "Rename Alta•Via to Cortina throughout codebase"
-
----
-
-*Last updated: 2026-08-29*
-*Updated by: Claude Code — Product rename to Cortina*
-*Status: Rename complete — ready for Session 5b*
+*Last updated: 2026-09-08*
+*Updated by: Claude Code — Architecture, module structure, and Phase 2 spec update*
+*Status: Session 5b complete — ready for Session 5c*
