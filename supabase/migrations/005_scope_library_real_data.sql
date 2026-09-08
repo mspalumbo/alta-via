@@ -1,0 +1,13 @@
+-- ============================================================
+-- Cortina — Migration 005: Scope Library Real Data Load
+-- 123 scope items from Attachment A loaded directly via SQL Editor
+-- Items cover: A-Predevelopment (1-32), B-Design-Consultant-Selection (33-44),
+-- C-Contractor-Selection (45-58), D-Preconstruction-Coordination (59-72),
+-- E-Other-Vendor-Procurement (73-87), F-Cost-Schedule-Quality (88-91),
+-- G-Construction-Phase (92-108), H-Other-Vendors-Construction (109-123)
+-- All items: is_custom=false, is_active=true
+-- Date loaded: 2026-09-08
+-- ============================================================
+-- NOTE: To reload this data, use the full SQL file in the project files.
+-- Running DELETE FROM scope_library will also delete any fee_line_items
+-- that reference scope items — clear fee_line_items first.
