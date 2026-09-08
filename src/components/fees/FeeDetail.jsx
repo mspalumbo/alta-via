@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import Modal from '../ui/Modal'
 import FeeLineItems from './FeeLineItems'
+import FeeDiscounts from './FeeDiscounts'
 import ExhibitA from './ExhibitA'
 
 const STATUS_STYLES = {
@@ -455,10 +456,17 @@ export default function FeeDetail() {
         />
       </div>
 
-      {/* Discounts placeholder — Session 5c */}
+      {/* Discounts — Session 5c */}
       <div className="bg-white rounded border border-[#E5E7EB] p-6 mb-4">
         <h2 className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide mb-3">Discounts</h2>
-        <div className="text-sm text-[#6B7280]">Discounts will be built in Session 5c.</div>
+        <FeeDiscounts
+          feeId={fee.fee_id}
+          totalFee={fee.total_fee || 0}
+          isExecuted={isExecuted}
+          onDiscountedFeeChange={(newDiscountedFee) =>
+            setFee(prev => ({ ...prev, discounted_fee: newDiscountedFee }))
+          }
+        />
       </div>
 
       {/* Staffing Projection placeholder — Session 5d */}
