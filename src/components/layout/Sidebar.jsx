@@ -54,6 +54,25 @@ function moduleLinkClass({ isActive }) {
 
 const comingSoonClass = 'flex items-center px-3 py-2 pl-5 rounded text-sm bg-white/5 text-white/30 cursor-not-allowed'
 
+function dashboardLinkClass({ isActive }) {
+  return `flex items-center w-full px-3 py-2 text-sm font-medium transition-colors ${
+    isActive
+      ? 'text-white bg-white/10 border-l-4 border-[#F2903A]'
+      : 'text-white/80 hover:bg-white/5'
+  }`
+}
+
+function DashboardLink({ onNavigate }) {
+  return (
+    <div className="border-b border-white/10 mb-2">
+      <NavLink to="/" end onClick={onNavigate} className={dashboardLinkClass}>
+        <span className="mr-2" aria-hidden="true">⊞</span>
+        Dashboard
+      </NavLink>
+    </div>
+  )
+}
+
 function ModuleItem({ module, onNavigate }) {
   if (!module.built) {
     return (
@@ -113,6 +132,7 @@ export default function Sidebar() {
 
         {/* Nav sections */}
         <nav className="flex-1 px-2 py-4 overflow-y-auto">
+          <DashboardLink />
           {SECTIONS.map((section) => (
             <SectionGroup
               key={section.label}
@@ -142,6 +162,7 @@ export default function Sidebar() {
       {mobileOpen && (
         <div className="md:hidden fixed top-14 left-0 right-0 bottom-0 bg-[#1E3D2F] z-40 border-t border-white/10 overflow-y-auto">
           <nav className="px-2 py-2">
+            <DashboardLink onNavigate={() => setMobileOpen(false)} />
             {SECTIONS.map((section) => (
               <SectionGroup
                 key={section.label}
