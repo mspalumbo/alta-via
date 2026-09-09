@@ -1795,6 +1795,63 @@ Always give Supabase SQL steps in a separate clearly labeled block for manual ex
 
 ---
 
+## 19. LESSONS LEARNED FROM CORTINA BUILD
+
+Apply these proactively — do not wait to rediscover them.
+
+### L9 — RLS Anon Policies Needed for Every New Table and Operation
+Every new table and every new operation type (INSERT, UPDATE, DELETE) requires an explicit anon RLS policy during development. Do not wait for a silent failure in the UI to discover a missing policy. After creating any new table, immediately add:
+CREATE POLICY "anon_[table]_all" ON [table] FOR ALL TO anon USING (true) WITH CHECK (true);
+For production: replace anon policies with authenticated policies scoped by user_id or role.
+
+### L10 — Generated Columns Cannot Be Included in INSERT or UPDATE
+fee_line_items.total_hours and fee_line_items.line_total are GENERATED ALWAYS AS STORED columns.
+Never include them in INSERT or UPDATE statements — Postgres will throw an error.
+Always read them back after mutations using a SELECT or by reading the returned data.
+Check 001_schema.sql for any column defined as GENERATED ALWAYS AS before writing to it.
+
+### L11 — Enum Types Must Be Extended Before Writing New Values
+When adding new values to a Postgres enum (e.g. scope_unit_enum), the UI build succeeds but every write fails with "invalid input value for enum" until ALTER TYPE is run in Supabase.
+Always run ALTER TYPE [enum_name] ADD VALUE '[new_value]' before building UI that writes new enum values.
+New values cannot be added inside a transaction — run each ADD VALUE as a separate statement.
+
+### L12 — Scope Library DELETE Blocked by Foreign Key from fee_line_items
+DELETE FROM scope_library fails when fee_line_items rows reference scope items via scope_item_id FK.
+To reload scope library data: TRUNCATE TABLE fee_line_items first, then DELETE FROM scope_library.
+Document dependency order for any data reset operation involving tables with FK relationships.
+
+### L13 — Sort Order Needs a Dedicated Column from Day One
+Relying on created_at for display order creates reordering problems later.
+Any list that users might want to reorder needs a sort_order integer column from the start.
+Pattern: sort_order integer, set on INSERT, updated via Promise.all on drag-to-reorder.
+HTML5 drag and drop API handles reordering without any new npm packages.
+
+### L14 — Firm-Wide Fields Stored Per-Row Require Bulk UPDATE
+Rate Builder stores firm assumptions on every rate_cards row (one row per title stack).
+When any firm assumption changes, UPDATE all affected rows simultaneously:
+UPDATE rate_cards SET [field] = value WHERE rate_type = 'Role-Based'
+Never update just one row when the field is conceptually firm-wide.
+Consider whether a separate firm_settings table would be cleaner for future firm-wide config.
+
+### L15 — Popover Calculation Inputs Need Their Own Storage Columns
+If a calculation helper popover needs to show previous inputs on reopen, those inputs must be persisted to the database. React state is lost on page refresh and component remount.
+Pattern: store calc_amount and calc_freq columns alongside the calculated result column.
+Pre-fill the popover from stored values on open; save inputs alongside the result on Apply.
+
+### L16 — Scope Library Data Reset Requires Clearing Dependent Tables First
+When reloading seed data into scope_library, fee_line_items must be cleared first due to FK constraint.
+Safe reset sequence: TRUNCATE TABLE fee_line_items; then DELETE FROM scope_library; then INSERT new data.
+Always check for FK dependencies before running DELETE on any reference table.
+
+### L17 — Rate Builder Architectural Pattern: Title Stacks + Firm Assumptions
+The Rate Builder uses a hybrid architecture:
+- Firm assumptions (bonus %, benefits, overhead rates) stored on every rate_card row identically
+- Title-specific fields (salary, PTO, utilization, published rate) vary per row
+- Calculated outputs (cost_per_hour, required_rate) stored on each row for reference
+This pattern works for small firms but may need normalization (separate firm_assumptions table) as the product scales. Flag for future consideration.
+
+---
+
 *Last updated: 2026-09-08*
-*Updated by: Claude Code — Architecture, module structure, and Phase 2 spec update*
-*Status: Session 5b complete — ready for Session 5c*
+*Updated by: Claude Code — Rate Builder module (Session 6a) and Lessons Learned from Cortina Build*
+*Status: Session 6a complete — ready for Session 6b*
