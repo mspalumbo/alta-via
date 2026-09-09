@@ -32,7 +32,7 @@ const SECTIONS = [
   {
     label: 'Management',
     modules: [
-      { label: 'Rate Builder', path: '/rate-builder', built: false },
+      { label: 'Rate Builder', path: '/rate-builder', built: true },
       { label: 'Employee Management', path: '/employee-management', built: false },
       { label: 'Profit & Margins', path: '/profit', built: false },
       { label: 'Staff Utilization', path: '/staff-utilization', built: false },

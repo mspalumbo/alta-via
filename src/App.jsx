@@ -7,6 +7,7 @@ import ProjectDetailPage from './pages/ProjectDetailPage'
 import RateCardsPage from './pages/RateCardsPage'
 import FeesPage from './pages/FeesPage'
 import FeeDetailPage from './pages/FeeDetailPage'
+import RateBuilderPage from './pages/RateBuilderPage'
 
 // Placeholder pages — will be replaced as modules are built
 function Dashboard() {
@@ -51,7 +52,7 @@ export default function App() {
         <Route path="/performance" element={<ComingSoon label="Performance Evaluations" />} />
 
         {/* Management */}
-        <Route path="/rate-builder" element={<ComingSoon label="Rate Builder" />} />
+        <Route path="/rate-builder" element={<RateBuilderPage />} />
         <Route path="/employee-management" element={<ComingSoon label="Employee Management" />} />
         <Route path="/profit" element={<ComingSoon label="Profit & Margins" />} />
         <Route path="/staff-utilization" element={<ComingSoon label="Staff Utilization" />} />
