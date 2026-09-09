@@ -66,7 +66,6 @@ function DashboardLink({ onNavigate }) {
   return (
     <div className="border-b border-white/10 mb-2">
       <NavLink to="/" end onClick={onNavigate} className={dashboardLinkClass}>
-        <span className="mr-2" aria-hidden="true">⊞</span>
         Dashboard
       </NavLink>
     </div>
@@ -113,12 +112,21 @@ function SectionGroup({ section, open, onToggle, onNavigate }) {
 
 export default function Sidebar() {
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [openSections, setOpenSections] = useState(() =>
-    SECTIONS.reduce((acc, s) => ({ ...acc, [s.label]: false }), {}),
-  )
+  const [openSections, setOpenSections] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem('cortina-sidebar-sections')
+      return saved ? JSON.parse(saved) : SECTIONS.reduce((acc, s) => ({ ...acc, [s.label]: false }), {})
+    } catch {
+      return SECTIONS.reduce((acc, s) => ({ ...acc, [s.label]: false }), {})
+    }
+  })
 
   function toggleSection(label) {
-    setOpenSections((prev) => ({ ...prev, [label]: !prev[label] }))
+    setOpenSections((prev) => {
+      const next = { ...prev, [label]: !prev[label] }
+      try { sessionStorage.setItem('cortina-sidebar-sections', JSON.stringify(next)) } catch {}
+      return next
+    })
   }
 
   return (
