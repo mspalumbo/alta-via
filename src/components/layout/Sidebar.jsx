@@ -13,7 +13,6 @@ const SECTIONS = [
     label: 'Projects',
     modules: [
       { label: 'Contract', path: '/projects', built: true },
-      { label: 'Fee Development', path: '/fees', built: true },
       { label: 'Billing', path: '/billing', built: false },
       { label: 'Accounts Receivable', path: '/ar', built: false },
     ],
