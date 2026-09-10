@@ -8,6 +8,7 @@ import RateCardsPage from './pages/RateCardsPage'
 import FeesPage from './pages/FeesPage'
 import FeeDetailPage from './pages/FeeDetailPage'
 import RateBuilderPage from './pages/RateBuilderPage'
+import TimesheetsPage from './pages/TimesheetsPage'
 
 // Placeholder pages — will be replaced as modules are built
 function Dashboard() {
@@ -44,7 +45,7 @@ export default function App() {
         <Route path="/ar" element={<ComingSoon label="Accounts Receivable" />} />
 
         {/* Employee */}
-        <Route path="/timesheets" element={<ComingSoon label="Timecards" />} />
+        <Route path="/timesheets" element={<TimesheetsPage />} />
         <Route path="/pto" element={<ComingSoon label="PTO Management" />} />
         <Route path="/expenses" element={<ComingSoon label="Expense Reports" />} />
         <Route path="/utilization" element={<ComingSoon label="Utilization Projection" />} />

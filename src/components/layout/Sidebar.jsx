@@ -21,7 +21,7 @@ const SECTIONS = [
   {
     label: 'Employee',
     modules: [
-      { label: 'Timecards', path: '/timesheets', built: false },
+      { label: 'Timecards', path: '/timesheets', built: true },
       { label: 'PTO Management', path: '/pto', built: false },
       { label: 'Expense Reports', path: '/expenses', built: false },
       { label: 'Utilization Projection', path: '/utilization', built: false },
