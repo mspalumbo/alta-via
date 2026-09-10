@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import Modal from '../ui/Modal'
 import ProjectForm from './ProjectForm'
@@ -72,10 +72,11 @@ function formatRate(val) {
 export default function ProjectDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const [project, setProject] = useState(null)
   const [loading, setLoading] = useState(true)
   const [showEditModal, setShowEditModal] = useState(false)
-  const [activeTab, setActiveTab] = useState('overview')
+  const [activeTab, setActiveTab] = useState(location.state?.activeTab || 'overview')
 
   // Team assignments
   const [assignments, setAssignments] = useState([])
@@ -268,7 +269,18 @@ export default function ProjectDetail() {
 
       {activeTab === 'fees' && (
         <div className="bg-white rounded border border-[#E5E7EB] p-6">
-          <FeeList projectId={id} projectName={project.project_name} />
+          <FeeList
+            projectId={id}
+            projectName={project.project_name}
+            onSelect={(fee) =>
+              navigate(`/fees/${fee.fee_id}`, {
+                state: {
+                  fromProjectId: project.project_id,
+                  fromProjectName: project.project_name,
+                },
+              })
+            }
+          />
         </div>
       )}
 

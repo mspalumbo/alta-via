@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import Modal from '../ui/Modal'
 import FeeLineItems from './FeeLineItems'
@@ -140,6 +140,8 @@ function EditFeeForm({ fee, onSave, onCancel }) {
 export default function FeeDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
+  const { fromProjectId, fromProjectName } = location.state || {}
   const [fee, setFee] = useState(null)
   const [loading, setLoading] = useState(true)
   const [actionError, setActionError] = useState(null)
@@ -295,12 +297,25 @@ export default function FeeDetail() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-6">
         <div>
-          <button
-            onClick={() => navigate('/fees')}
-            className="text-sm text-[#6B7280] hover:text-[#1A1A2E] mb-1 flex items-center gap-1"
-          >
-            ← Back to Fee Development
-          </button>
+          {fromProjectId ? (
+            <button
+              onClick={() =>
+                navigate(`/projects/${fromProjectId}`, {
+                  state: { activeTab: 'fees' },
+                })
+              }
+              className="text-sm text-[#6B7280] hover:text-[#1A1A2E] mb-1 flex items-center gap-1"
+            >
+              ← Back to {fromProjectName || 'Contract'}
+            </button>
+          ) : (
+            <button
+              onClick={() => navigate('/fees')}
+              className="text-sm text-[#6B7280] hover:text-[#1A1A2E] mb-1 flex items-center gap-1"
+            >
+              ← Back to Fee Development
+            </button>
+          )}
           <div className="flex items-center gap-3 flex-wrap">
             <h1 className="text-xl font-semibold text-[#1A1A2E]">{fee.fee_name}</h1>
             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_STYLES[fee.status] ?? 'bg-gray-100 text-[#6B7280]'}`}>

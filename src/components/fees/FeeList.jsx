@@ -99,9 +99,17 @@ function ProjectSelectorStep({ onSelect, onCancel }) {
 }
 
 // projectId + projectName: if provided, operates in embedded (project-scoped) mode
-export default function FeeList({ projectId, projectName }) {
+export default function FeeList({ projectId, projectName, onSelect }) {
   const navigate = useNavigate()
   const embedded = Boolean(projectId)
+
+  // Embedded mode passes onSelect so the parent can attach navigation state
+  // (fromProjectId / fromProjectName) for the return trip. Firm-wide mode
+  // (standalone /fees route) has no parent, so navigate directly.
+  function goToFee(fee) {
+    if (onSelect) onSelect(fee)
+    else navigate(`/fees/${fee.fee_id}`)
+  }
 
   // Embedded mode — flat list of this project's fees
   const [fees, setFees] = useState([])
@@ -274,7 +282,7 @@ export default function FeeList({ projectId, projectName }) {
               {!loading && fees.map((fee) => (
                 <tr
                   key={fee.fee_id}
-                  onClick={() => navigate(`/fees/${fee.fee_id}`)}
+                  onClick={() => goToFee(fee)}
                   className="border-t border-[#E5E7EB] hover:bg-[#F8F9FA] cursor-pointer"
                 >
                   <td className="px-4 py-3 font-medium text-[#1A1A2E]">{fee.fee_name}</td>
@@ -427,7 +435,7 @@ export default function FeeList({ projectId, projectName }) {
                   projectFees.map((fee) => (
                     <div
                       key={fee.fee_id}
-                      onClick={() => navigate(`/fees/${fee.fee_id}`)}
+                      onClick={() => goToFee(fee)}
                       className="flex items-center justify-between px-4 py-2.5 ml-6 bg-white border border-[#E5E7EB] rounded-lg cursor-pointer hover:bg-[#F8F9FA] transition-colors mb-1.5"
                     >
                       <div className="flex items-center min-w-0">

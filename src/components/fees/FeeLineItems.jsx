@@ -151,10 +151,10 @@ function ScopeLibraryBrowser({ library, addedScopeIds, onAdd, search, setSearch,
         )}
         {PHASE_ORDER.filter((ph) => grouped[ph]).map((ph) => (
           <div key={ph} className="mb-2">
-            <div className="text-xs font-semibold text-[#1A1A2E] px-1 py-1">{ph}</div>
+            <div className="bg-[#142538] text-white text-xs font-bold uppercase tracking-widest px-2 py-2">{ph}</div>
             {CATEGORY_ORDER.filter((cat) => grouped[ph][cat]).map((cat) => (
               <div key={cat} className="mb-1">
-                <div className="text-[11px] font-medium text-[#6B7280] px-1 mt-1">
+                <div className="sticky top-0 bg-[#1E3D2F] text-white text-xs font-semibold uppercase tracking-wide px-2 py-1.5 mt-2">
                   {catLabel(cat)}
                 </div>
                 {grouped[ph][cat].map((it) => (

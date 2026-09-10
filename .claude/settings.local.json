@@ -4,7 +4,11 @@
       "Read(//mnt/c/Users/mspal/Documents/**)",
       "Bash(dir \"C:\\\\Users\\\\mspal\\\\Documents\\\\alta-via\")",
       "Bash(mkdir -p \"/mnt/c/Users/mspal/Documents/alta-via/supabase/migrations\")",
-      "Bash(mkdir -p \"/mnt/c/Users/mspal/Documents/alta-via/src/lib\")"
+      "Bash(mkdir -p \"/mnt/c/Users/mspal/Documents/alta-via/src/lib\")",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(npm run *)"
     ]
   }
 }
