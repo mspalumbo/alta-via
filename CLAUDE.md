@@ -1747,6 +1747,23 @@ All migrations have been run in Supabase. Do not re-run.
 ### Session 5c — Next
 **Objective:** Discounts module in Fee Development
 
+### Session 7 — Timecards (E1)
+**What was built:**
+- TimesheetsPage.jsx — week selector (Sun-Sat), prev/next navigation, Copy/Save/Submit buttons, Grid/List toggle, defaults to current week on load
+- TimesheetGrid.jsx — weekly grid with CODE/DESCRIPTION/Sun-Sat/TOTAL/DELETE columns, smart code search dropdown, blank bottom row pattern, inline save on blur, daily and weekly footer totals, weekend columns visually de-emphasized, approval workflow (Submit/Approve/Return)
+- TimesheetList.jsx — recent weeks list with status badges
+- UtilizationPanel.jsx — This Week/Last Week/This Month/YTD metrics, 85% default target, placeholder note for E4 projection feed
+
+**Key decisions:**
+- Weeks run Sunday→Saturday (matches DB schema)
+- Split weeks (spanning two months): the DB's UNIQUE(user_id, week_start_date) plus week-span/DOW CHECK constraints make a true two-record split impossible without a migration. Built as a single timesheet record instead — billing_month = whichever month contains the majority of the 7 days; days outside billing_month are greyed and disabled in the grid. getWeekRecords() still returns an array for forward compatibility with a future migration, but always has one element today.
+- TEST_USER_ID = '1683e702-bbee-426f-92fd-cad64b8cd731' (matt@vettapm.com) hardcoded — replace with auth.uid() when auth is built
+- is_billable always copied from billing_code via the enforce_is_billable DB trigger — never user-editable
+- rate_applied and amount are left null on entry and remain null through Approve — populating them requires the rate-lookup and re-forecast machinery, which isn't built yet. Approve currently only locks status.
+- DESCRIPTION is one field per code-row per week in the UI, even though timesheet_entries.description is a per-day column — the row's text is write-through synced across every day-entry for that code/week
+- OOO billing code deactivated (redundant with PTO)
+- Utilization projection comparison (vs E4) deferred until E4 is built
+
 ---
 
 ## 18. LESSONS LEARNED FROM VETTA BUILD
@@ -1852,6 +1869,6 @@ This pattern works for small firms but may need normalization (separate firm_ass
 
 ---
 
-*Last updated: 2026-09-08*
-*Updated by: Claude Code — Rate Builder module (Session 6a) and Lessons Learned from Cortina Build*
-*Status: Session 6a complete — ready for Session 6b*
+*Last updated: 2026-09-09*
+*Updated by: Claude Code — Timecards module (Session 7)*
+*Status: Session 7 complete — ready for Session 8*
