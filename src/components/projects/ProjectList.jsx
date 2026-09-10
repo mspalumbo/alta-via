@@ -67,12 +67,12 @@ export default function ProjectList() {
     <div>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
-        <h1 className="text-xl font-semibold text-[#1A1A2E]">Projects</h1>
+        <h1 className="text-xl font-semibold text-[#1A1A2E]">Contract</h1>
         <button
           onClick={() => setShowAddModal(true)}
           className="bg-[#F2903A] text-white text-sm px-4 py-2 rounded hover:bg-orange-500 transition-colors"
         >
-          + Add Project
+          + Add Contract
         </button>
       </div>
 
@@ -128,7 +128,7 @@ export default function ProjectList() {
             )}
             {!loading && filtered.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-[#6B7280]">No projects found.</td>
+                <td colSpan={6} className="px-4 py-6 text-center text-[#6B7280]">No contracts found.</td>
               </tr>
             )}
             {!loading && filtered.map((project) => (
@@ -164,7 +164,7 @@ export default function ProjectList() {
       </div>
 
       {showAddModal && (
-        <Modal title="Add Project" onClose={() => setShowAddModal(false)}>
+        <Modal title="Add Contract" onClose={() => setShowAddModal(false)}>
           <ProjectForm
             onSave={() => {
               setShowAddModal(false)
